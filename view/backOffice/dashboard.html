@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tableau de bord | Education.com</title>
+  <link rel="stylesheet" href="dashboard.css">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <a href="dashboard.html">Education.com</a>
+    </div>
+    <ul class="sidebar-links">
+      <li><a href="profile.html"><i class="fas fa-user"></i> Mon Profil</a></li>
+      <li><a href="courses.html"><i class="fas fa-chalkboard-teacher"></i> Mes Cours</a></li>
+      <li><a href="certificate.html"><i class="fas fa-certificate"></i> Certificats</a></li>
+      <li><a href="settings.html"><i class="fas fa-cogs"></i> Paramètres</a></li>
+      <li><a href="logout.html"><i class="fas fa-sign-out-alt"></i> Déconnexion</a></li>
+    </ul>
+  </div>
+
+  <!-- Contenu principal -->
+  <div class="main-content">
+    <div class="dashboard-card">
+      <h2>Bienvenue sur votre tableau de bord, [Nom de l'utilisateur] !</h2>
+      <p>Voici un aperçu de vos informations et activités récentes.</p>
+
+      <div class="dashboard-sections">
+        <!-- Première grille (Stats, Notifications, Actions) -->
+        <section class="stats">
+          <h3><i class="fas fa-chart-line"></i> Statistiques</h3>
+          <ul>
+            <li><strong>Nombre de cours suivis :</strong> 5</li>
+            <li><strong>Progrès :</strong> 80%</li>
+            <li><strong>Certificat obtenu :</strong> 2</li>
+          </ul>
+        </section>
+
+        <section class="notifications">
+          <h3><i class="fas fa-bell"></i> Notifications récentes</h3>
+          <ul>
+            <li>Vous avez une nouvelle mise à jour sur un de vos cours.</li>
+            <li>Un certificat a été ajouté à votre profil.</li>
+            <li>Votre prochain cours commence demain.</li>
+          </ul>
+        </section>
+
+        <section class="actions">
+          <h3><i class="fas fa-tasks"></i> Actions rapides</h3>
+          <ul>
+            <li><a href="courses.html"><i class="fas fa-eye"></i> Voir mes cours</a></li>
+            <li><a href="certificate.html"><i class="fas fa-certificate"></i> Voir mes certificats</a></li>
+            <li><a href="profile.html"><i class="fas fa-user-edit"></i> Modifier mon profil</a></li>
+          </ul>
+        </section>
+      </div>
+
+      <!-- Nouvelle grille ajoutée -->
+      <div class="extra-sections">
+        <section class="overview">
+          <h3><i class="fas fa-clipboard-list"></i> Aperçu général</h3>
+          <ul>
+            <li><strong>Prochain cours :</strong> Cours de JavaScript</li>
+            <li><strong>Dernier cours terminé :</strong> HTML & CSS avancé</li>
+            <li><strong>Temps de formation :</strong> 15 heures</li>
+          </ul>
+        </section>
+
+        <section class="resources">
+          <h3><i class="fas fa-book"></i> Ressources disponibles</h3>
+          <ul>
+            <li><a href="resources.html"><i class="fas fa-file-pdf"></i> Télécharger le PDF du cours</a></li>
+            <li><a href="forum.html"><i class="fas fa-users"></i> Rejoindre le forum</a></li>
+            <li><a href="faq.html"><i class="fas fa-question-circle"></i> Voir la FAQ</a></li>
+          </ul>
+        </section>
+
+        <section class="recent-activity">
+          <h3><i class="fas fa-history"></i> Activités récentes</h3>
+          <ul>
+            <li>Vous avez mis à jour votre profil.</li>
+            <li>Vous avez terminé le module 3 du cours "React Basics".</li>
+            <li>Vous avez commenté sur un forum de discussion.</li>
+          </ul>
+        </section>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

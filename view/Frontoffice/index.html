@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Monde d'apprentissage</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    /* NAVBAR */
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 30px;
+      background-color: white;
+      border-bottom: 1px solid #ddd;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .navbar-left {
+      display: flex;
+      align-items: center;
+      gap: 25px;
+    }
+
+    .navbar-left img {
+      height: 30px;
+    }
+
+    .navbar-left .menu-item {
+      font-size: 14px;
+      cursor: pointer;
+      color: #333;
+    }
+
+    .navbar-right {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .search-box {
+      padding: 6px 10px;
+      border: 1px solid #ccc;
+      border-radius: 20px;
+      width: 200px;
+    }
+
+    .btn-login, .btn-signup {
+      border: none;
+      padding: 6px 14px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .btn-login {
+      background: transparent;
+      color: #333;
+    }
+
+    .btn-signup {
+      background-color: #00c4c8;
+      color: white;
+    }
+
+    .top-banner {
+      background-color: #ffe0d5;
+      text-align: center;
+      padding: 8px;
+      font-size: 14px;
+    }
+
+    .top-banner a {
+      color: #0073e6;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    /* SECTION ACCUEIL */
+    .header-section {
+      background-color: #b8e9f8;
+      padding: 60px 20px;
+      text-align: center;
+      position: relative;
+    }
+
+    .header-section h1 {
+      font-size: 36px;
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    .header-section p {
+      font-size: 18px;
+      max-width: 600px;
+      margin: 0 auto 30px;
+      color: #333;
+    }
+
+    .btn-join {
+      background-color: #5e67eb;
+      color: white;
+      padding: 14px 30px;
+      font-size: 16px;
+      border: none;
+      border-radius: 30px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .btn-join:hover {
+      background-color: #4c54c6;
+    }
+
+    .characters {
+      margin-top: 40px;
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      flex-wrap: wrap;
+    }
+
+    .character {
+      width: 100px;
+      height: 100px;
+      background-color: #ffe9a7;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+    }
+
+    .library-section {
+      padding: 40px 20px;
+      background-color: #fff;
+      text-align: center;
+    }
+
+    .library-section h2 {
+      font-size: 28px;
+      margin-bottom: 10px;
+    }
+
+    .library-section p {
+      font-size: 18px;
+      color: #444;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <div class="navbar">
+    <div class="navbar-left">
+      <img src="loginnn.png" alt="Logo">
+      <div class="menu-item">Matières</div>
+      <div class="menu-item">Niveaux</div>
+      <div class="menu-item">Fiches</div>
+      <div class="menu-item">Jeux</div>
+      <div class="menu-item">Créer une fiche</div>
+      <div class="menu-item">Autres ressources</div>
+      <div class="menu-item">Recommandé par Roly</div>
+      <div class="menu-item">Mois des maths</div>
+    </div>
+    <div class="navbar-right">
+      <input type="text" class="search-box" placeholder='Rechercher "fiches d’addition"'>
+      <button class="btn-login" onclick="window.location.href='login.html'">Se connecter</button>
+     <button class="btn-signup" onclick="window.location.href='signup.html'">S’inscrire</button>
+
+    </div>
+  </div>
+
+  <!-- BANDEAU -->
+  <div class="top-banner">
+    Avez-vous reçu un code d’accès de l’enseignant de votre enfant ? 
+    <a href="#">Cliquez ici pour commencer.</a>
+  </div>
+
+  <!-- SECTION ACCUEIL -->
+  <div class="header-section">
+    <h1>Découvrez un monde d'apprentissage sans limites</h1>
+    <p>
+      Révisez les notions et explorez de nouveaux sujets avec des fiches, des activités pratiques, des puzzles, des jeux, et bien plus encore ! Accédez dès aujourd’hui à notre bibliothèque de plus de 37 000 ressources.
+    </p>
+    <button class="btn-join">Inscription gratuite</button>
+
+    <div class="characters">
+      <div class="character">🐤</div>
+      <div class="character">🐱</div>
+      <div class="character">📘</div>
+    </div>
+  </div>
+
+  <!-- SECTION BIBLIOTHÈQUE -->
+  <div class="library-section">
+    <h2>Notre bibliothèque d'apprentissage</h2>
+    <p>Avec des milliers de ressources numériques et imprimables, trouvez la meilleure ressource pour votre élève.</p>
+  </div>
+  <!-- SECTION BLOCS D'APPRENTISSAGE -->
+<style>
+    .resources-section {
+      padding: 60px 20px;
+      text-align: center;
+      background-color: #fff;
+    }
+  
+    .resources-title {
+      background-color: #5e67eb;
+      color: white;
+      display: inline-block;
+      padding: 12px 40px;
+      font-size: 18px;
+      font-weight: bold;
+      border-radius: 25px;
+      margin-bottom: 40px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+  
+    .cards-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 25px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+  
+    .card {
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      padding: 30px 20px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+  
+    .card-icon {
+      font-size: 36px;
+      background-color: #dff7fa;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      margin: 0 auto 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  
+    .card-title {
+      color: #00c4c8;
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 12px;
+    }
+  
+    .card-desc {
+      font-size: 15px;
+      color: #444;
+      margin-bottom: 20px;
+    }
+  
+    .card button {
+      background-color: #5e67eb;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 14px;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+  
+    .card button:hover {
+      background-color: #4c54c6;
+    } .community-section {
+  background-color: #4c6edb;
+  color: white;
+  padding: 50px 20px;
+  text-align: center;
+  font-family: Arial, sans-serif;
+}
+
+.community-section h2 {
+  font-size: 2.5em;
+  margin-bottom: 40px;
+}
+
+.stats {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 40px;
+  margin-bottom: 50px;
+}
+
+.stat {
+  max-width: 250px;
+}
+
+.stat img {
+  width: 100px;
+  margin-bottom: 10px;
+}
+
+.stat p span {
+  color: #ffd700;
+  font-weight: bold;
+  font-size: 1.2em;
+}
+
+.testimonials {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 30px;
+}
+
+.testimonial {
+  background: white;
+  color: #333;
+  border-radius: 15px;
+  padding: 20px;
+  max-width: 400px;
+  text-align: left;
+  position: relative;
+}
+
+.testimonial:before {
+  content: "“";
+  font-size: 40px;
+  color: #ccc;
+  position: absolute;
+  top: -10px;
+  left: 15px;
+}
+
+.author {
+  display: flex;
+  align-items: center;
+  margin-top: 15px;
+}
+
+.author img {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  margin-right: 15px;
+}
+.footer {
+  background-color: #f4e7ca;
+  color: rgb(2, 2, 2);
+  padding: 40px 20px 20px;
+  font-family: Arial, sans-serif;
+}
+
+.footer-content {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.footer-section {
+  flex: 1;
+  min-width: 220px;
+  margin: 10px;
+}
+
+.footer-section h4 {
+  font-size: 1.2em;
+  margin-bottom: 15px;
+  border-bottom: 2px solid #3498db;
+  display: inline-block;
+}
+
+.footer-section ul {
+  list-style: none;
+  padding: 0;
+}
+
+.footer-section ul li {
+  margin-bottom: 10px;
+}
+
+.footer-section a {
+  color: #0e0f0f;
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+.footer-section a:hover {
+  color: #3498db;
+}
+
+.footer-bottom {
+  text-align: center;
+  border-top: 1px solid #0d0e0e;
+  padding-top: 15px;
+  font-size: 0.9em;
+}
+
+.socials {
+  display: flex;
+  gap: 10px;
+}
+
+.socials img {
+  width: 24px;
+  height: 24px;
+}
+
+
+  </style>
+  
+  <section class="resources-section">
+    <div class="resources-title">Commencez dès maintenant</div>
+  
+    <div class="cards-container">
+  
+      <div class="card">
+        <div class="card-icon">📋</div>
+        <div class="card-title">Plans de cours</div>
+        <div class="card-desc">
+          Des plans prêts à l’emploi pour enseigner efficacement en classe ou à la maison.
+        </div>
+        <button>Planifier un cours</button>
+      </div>
+  
+      <div class="card">
+        <div class="card-icon">📄</div>
+        <div class="card-title">Fiches d'exercices</div>
+        <div class="card-desc">
+          Des fiches pour pratiquer l’écriture, les mathématiques, la lecture et bien plus encore !
+        </div>
+        <button>Voir les fiches</button>
+      </div>
+  
+      <div class="card">
+        <div class="card-icon">🎮</div>
+        <div class="card-title">Jeux éducatifs</div>
+        <div class="card-desc">
+          Apprendre en jouant ! Des jeux immersifs pour renforcer les compétences scolaires.
+        </div>
+        <button>Jouer maintenant</button>
+      </div>
+  
+      <div class="card">
+        <div class="card-icon">✂️</div>
+        <div class="card-title">Activités</div>
+        <div class="card-desc">
+          Donnez vie aux sujets avec des expériences, du bricolage, des défis d’écriture et plus.
+        </div>
+        <button>Créer une activité</button>
+      </div>
+      <div class="card">
+        <div class="card-icon">📚</div>
+        <div class="card-title">Lecture</div>
+        <div class="card-desc">
+          Explorez des histoires captivantes, des livres adaptés à chaque niveau scolaire.
+        </div>
+        <button>Commencer à lire</button>
+      </div>
+  
+      <!-- Nouveau cadre 2 -->
+      <div class="card">
+        <div class="card-icon">🧪</div>
+        <div class="card-title">Sciences</div>
+        <div class="card-desc">
+          Expériences interactives, vidéos et activités pour comprendre le monde qui nous entoure.
+        </div>
+        <button>Explorer les sciences</button>
+      </div>
+  
+    </div>
+  </section>
+  <!-- SECTION Communauté -->
+<section class="community-section">
+    <h2>Rejoignez la communauté Education.com !</h2>
+  
+    <!-- Statistiques -->
+    <div class="stats">
+      <div class="stat">
+        <img src="TuTu.png" alt="Icone 1">
+        <p><span>44 millions</span> de parents, enseignants et élèves servis</p>
+      </div>
+      <div class="stat">
+        <img src="Floyd.png" alt="Icone 2">
+        <p>Utilisé dans <span>20 pays</span> sur 6 continents</p>
+      </div>
+      <div class="stat">
+        <img src="IceCream.png" alt="Icone 3">
+        <p>Une bibliothèque de <span>37 000</span> ressources éducatives</p>
+      </div>
+    </div>
+  
+    <!-- Témoignages -->
+    <div class="testimonials">
+      <div class="testimonial">
+        <p>J’adore le fait que cela me montre les domaines que mon enfant doit améliorer, et me dirige vers les bonnes ressources.</p>
+        <strong>Sarah H.</strong><br>
+        <small>Parent et membre premium Education.com</small>
+      </div>
+      <div class="testimonial">
+        <p>Education.com offre de nombreuses ressources bien organisées selon le niveau, le sujet ou le type d’apprentissage !</p>
+        <div class="author">
+          <img src="amyjo-meiners (1).jpg" alt="Amy Jo Meiners">
+          <div>
+            <strong>Amy Jo Meiners</strong><br>
+            <small>Enseignante de l’année, Alaska 2016</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-section">
+        <h4>À propos</h4>
+        <p>Education.com est une plateforme éducative dédiée à l'apprentissage interactif pour enfants, enseignants et parents.</p>
+      </div>
+      <div class="footer-section">
+        <h4>Ressources</h4>
+        <ul>
+          <li><a href="#">Fiches d'exercices</a></li>
+          <li><a href="#">Jeux éducatifs</a></li>
+          <li><a href="#">Plans de leçon</a></li>
+          <li><a href="#">Activités manuelles</a></li>
+        </ul>
+      </div>
+      <div class="footer-section">
+        <h4>Suivez-nous</h4>
+        <ul class="socials">
+          <li><a href="#"><img src="facebook.png" alt="Facebook"></a></li>
+          <li><a href="#"><img src="instagram.png" alt="Instagram"></a></li>
+          <li><a href="#"><img src="twitter.png" alt="Twitter"></a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2025 Education.com | Tous droits réservés.</p>
+    </div>
+  </footer>
+  
+  
+
+</body>
+</html>

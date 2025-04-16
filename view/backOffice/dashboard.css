@@ -1,0 +1,124 @@
+/* Style général */
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    display: flex;
+    height: 100vh;
+    background-color: #f0f0f0;
+  }
+  
+  /* Sidebar */
+  .sidebar {
+    width: 250px;
+    background-color: #fc56a0;
+    padding-top: 20px;
+    position: fixed;
+    height: 100%;
+  }
+  
+  .sidebar-header {
+    text-align: center;
+    margin-bottom: 30px;
+  }
+  
+  .sidebar-header a {
+    font-size: 1.8em;
+    color: white;
+    text-decoration: none;
+  }
+  
+  .sidebar-links {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .sidebar-links li {
+    margin: 15px 0;
+  }
+  
+  .sidebar-links li a {
+    color: white;
+    text-decoration: none;
+    font-size: 1.1em;
+    display: block;
+    padding: 10px;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+  }
+  
+  .sidebar-links li a:hover {
+    background-color: #ff99b1;
+  }
+  
+  /* Contenu principal */
+  .main-content {
+    margin-left: 250px;
+    padding: 30px;
+    width: 100%;
+  }
+  
+  .dashboard-card {
+    background-color: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+  
+  /* Sections du tableau de bord */
+  .dashboard-sections {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+  }
+  
+  .extra-sections {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+  }
+  
+  .dashboard-sections section,
+  .extra-sections section {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .dashboard-sections h3,
+  .extra-sections h3 {
+    color: #fc56a0;
+    font-size: 1.5em;
+    margin-bottom: 15px;
+  }
+  
+  ul {
+    list-style: none;
+    padding: 0;
+  }
+  
+  ul li {
+    font-size: 1.1em;
+    margin-bottom: 10px;
+  }
+  
+  /* Liens d'actions rapides */
+  .actions ul li a {
+    color: #fc56a0;
+    text-decoration: none;
+    font-weight: bold;
+  }
+  
+  .actions ul li a:hover {
+    text-decoration: underline;
+  }
+  
+  /* Icônes Font Awesome */
+  .fas {
+    margin-right: 10px;
+  }
+  
