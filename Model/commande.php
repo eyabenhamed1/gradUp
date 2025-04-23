@@ -1,0 +1,233 @@
+<?php
+class Commande {
+    private $id_commande;
+    private $nom;
+    private $prenom;
+    private $tlf;
+    private $adresse;
+    private $produits;
+    private $prix_total;
+    private $etat;
+    private $date_creation;
+
+    // Getters
+    public function getIdCommande() {
+        return $this->id_commande;
+    }
+
+    public function getNom() {
+        return $this->nom;
+    }
+
+    public function getPrenom() {
+        return $this->prenom;
+    }
+
+    public function getTlf() {
+        return $this->tlf;
+    }
+
+    public function getAdresse() {
+        return $this->adresse;
+    }
+
+    public function getProduits() {
+        return $this->produits;
+    }
+
+    public function getPrixTotal() {
+        return $this->prix_total;
+    }
+
+    public function getEtat() {
+        return $this->etat;
+    }
+
+    public function getDateCreation() {
+        return $this->date_creation;
+    }
+
+    // Setters
+    public function setNom($nom) {
+        $this->nom = $nom;
+    }
+
+    public function setPrenom($prenom) {
+        $this->prenom = $prenom;
+    }
+
+    public function setTlf($tlf) {
+        $this->tlf = $tlf;
+    }
+
+    public function setAdresse($adresse) {
+        $this->adresse = $adresse;
+    }
+
+    public function setProduits($produits) {
+        $this->produits = $produits;
+    }
+
+    public function setPrixTotal($prix_total) {
+        $this->prix_total = $prix_total;
+    }
+
+    public function setEtat($etat) {
+        $this->etat = $etat;
+    }
+
+    /**
+     * Enregistre une nouvelle commande dans la base de données
+     */
+    public function save() {
+        $conn = new mysqli("localhost", "root", "", "projetweb2a");
+        
+        if ($conn->connect_error) {
+            throw new Exception("Erreur de connexion: " . $conn->connect_error);
+        }
+        
+        $stmt = $conn->prepare("INSERT INTO commande (nom, prenom, tlf, adresse, produits, prix_total, etat) 
+                               VALUES (?, ?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param("sssssds", 
+            $this->nom, 
+            $this->prenom, 
+            $this->tlf, 
+            $this->adresse, 
+            $this->produits, 
+            $this->prix_total, 
+            $this->etat);
+        
+        if (!$stmt->execute()) {
+            throw new Exception("Erreur d'enregistrement: " . $stmt->error);
+        }
+        
+        $this->id_commande = $conn->insert_id;
+        $stmt->close();
+        $conn->close();
+        
+        return $this->id_commande;
+    }
+
+    /**
+     * Récupère une commande par son ID
+     */
+    public function getCommandeById($id) {
+        $conn = new mysqli("localhost", "root", "", "projetweb2a");
+        
+        $stmt = $conn->prepare("SELECT * FROM commande WHERE id_commande = ?");
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        if ($result->num_rows === 0) {
+            return null;
+        }
+        
+        return $result->fetch_assoc();
+    }
+
+    /**
+     * Modifie une commande existante
+     */
+    public function modifierCommande($id, $data) {
+        $conn = new mysqli("localhost", "root", "", "projetweb2a");
+        
+        // Vérifier d'abord si la commande est modifiable (état "en cours")
+        $checkSql = "SELECT etat FROM commande WHERE id_commande = ?";
+        $checkStmt = $conn->prepare($checkSql);
+        $checkStmt->bind_param("i", $id);
+        $checkStmt->execute();
+        $checkResult = $checkStmt->get_result();
+        
+        if ($checkResult->num_rows === 0) {
+            return "Commande introuvable";
+        }
+        
+        $currentState = $checkResult->fetch_assoc()['etat'];
+        if ($currentState !== 'en cours') {
+            return "Seules les commandes 'en cours' peuvent être modifiées";
+        }
+        
+        // Mise à jour de la commande
+        $updateSql = "UPDATE commande SET 
+                     nom = ?, 
+                     prenom = ?, 
+                     tlf = ?, 
+                     adresse = ?, 
+                     etat = ? 
+                     WHERE id_commande = ?";
+        
+        $stmt = $conn->prepare($updateSql);
+        $stmt->bind_param("sssssi", 
+            $data['nom'],
+            $data['prenom'],
+            $data['tlf'],
+            $data['adresse'],
+            $data['etat'],
+            $id
+        );
+        
+        if ($stmt->execute()) {
+            return true;
+        } else {
+            return "Erreur lors de la mise à jour: " . $conn->error;
+        }
+    }
+
+    /**
+     * Supprime une commande
+     */
+    public function supprimerCommande($id) {
+        $conn = new mysqli("localhost", "root", "", "projetweb2a");
+        
+        // Vérifier d'abord si la commande est supprimable (état "en cours")
+        $checkSql = "SELECT etat FROM commande WHERE id_commande = ?";
+        $checkStmt = $conn->prepare($checkSql);
+        $checkStmt->bind_param("i", $id);
+        $checkStmt->execute();
+        $checkResult = $checkStmt->get_result();
+        
+        if ($checkResult->num_rows === 0) {
+            return "Commande introuvable";
+        }
+        
+        $currentState = $checkResult->fetch_assoc()['etat'];
+        if ($currentState !== 'en cours') {
+            return "Seules les commandes 'en cours' peuvent être supprimées";
+        }
+        
+        // Suppression de la commande
+        $deleteSql = "DELETE FROM commande WHERE id_commande = ?";
+        $stmt = $conn->prepare($deleteSql);
+        $stmt->bind_param("i", $id);
+        
+        if ($stmt->execute()) {
+            return true;
+        } else {
+            return "Erreur lors de la suppression: " . $conn->error;
+        }
+    }
+
+    /**
+     * Récupère toutes les commandes
+     */
+    public function getAllCommandes() {
+        $conn = new mysqli("localhost", "root", "", "projetweb2a");
+        $result = $conn->query("SELECT * FROM commande ORDER BY date_creation DESC");
+        return $result->fetch_all(MYSQLI_ASSOC);
+    }
+
+    /**
+     * Récupère les commandes par état
+     */
+    public function getCommandesByEtat($etat) {
+        $conn = new mysqli("localhost", "root", "", "projetweb2a");
+        
+        $stmt = $conn->prepare("SELECT * FROM commande WHERE etat = ? ORDER BY date_creation DESC");
+        $stmt->bind_param("s", $etat);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        return $result->fetch_all(MYSQLI_ASSOC);
+    }
+}

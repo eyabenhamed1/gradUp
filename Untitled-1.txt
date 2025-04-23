@@ -1,0 +1,37 @@
+<?php
+require_once 'config.php';
+
+try {
+    $pdo = config::getConnexion();
+    
+    // 1. Test de connexion
+    echo "Connexion OK<br>";
+    
+    // 2. Test d'insertion minimal
+    $testData = [
+        'nom' => 'Test',
+        'prenom' => 'Script',
+        'tlf' => '12345678',
+        'adresse' => 'Adresse test',
+        'produits' => json_encode([['id'=>1, 'nom'=>'Produit Test', 'qty'=>1, 'prix'=>10]]),
+        'total' => 10.00
+    ];
+    
+    $stmt = $pdo->prepare("
+        INSERT INTO commande 
+        (nom, prenom, tlf, adresse, produits, prix_total) 
+        VALUES (:nom, :prenom, :tlf, :adresse, :produits, :total)
+    ");
+    
+    $success = $stmt->execute($testData);
+    
+    if ($success) {
+        echo "SUCCÈS - ID: ".$pdo->lastInsertId()."<br>";
+        echo "Vérifiez dans phpMyAdmin !";
+    } else {
+        echo "ÉCHEC D'INSERTION";
+    }
+
+} catch (PDOException $e) {
+    die("ERREUR: ".$e->getMessage());
+}

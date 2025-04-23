@@ -10,33 +10,23 @@ class ProduitFront
         $this->pdo = config::getConnexion();
     }
 
+    /**
+     * Récupère la liste des produits avec gestion des images
+     * @return array Liste des produits avec leurs chemins d'images vérifiés
+     */
     public function listeProduits() {
         try {
-            // Exécution de la requête pour récupérer les produits
             $query = $this->pdo->prepare("SELECT * FROM produit ORDER BY name DESC");
             $query->execute();
-
-            // Récupération des produits
             $produits = $query->fetchAll(PDO::FETCH_ASSOC);
 
-            // Si aucun produit n'est trouvé, afficher un message
             if (empty($produits)) {
-                echo "Aucun produit trouvé";
+                error_log("Aucun produit trouvé dans la base de données");
                 return [];
             }
 
-            // Boucle pour vérifier l'existence des images
             foreach ($produits as &$produit) {
-                // Générer le chemin vers l'image
-                $imagePath = 'View/Backoffice/uploads/' . $produit['image'];
-                $physicalPath = $_SERVER['DOCUMENT_ROOT'] . '/ProjetWeb2A/' . $imagePath;
-
-                // Vérifier si l'image existe et ajuster l'URL en conséquence
-                if (file_exists($physicalPath)) {
-                    $produit['image_path'] = $imagePath;
-                } else {
-                    $produit['image_path'] = 'https://via.placeholder.com/280x230?text=Image+Indisponible';
-                }
+                $produit['image_path'] = $this->getVerifiedImagePath($produit['image']);
             }
 
             return $produits;
@@ -46,18 +36,19 @@ class ProduitFront
         }
     }
 
+    /**
+     * Récupère un produit spécifique par son ID
+     * @param int $id_produit ID du produit à récupérer
+     * @return array|null Données du produit ou null si non trouvé
+     */
     public function getProduit($id_produit) {
         try {
-            // Exécution de la requête pour récupérer un produit spécifique
             $query = $this->pdo->prepare("SELECT * FROM produit WHERE id_produit = :id");
             $query->execute([':id' => $id_produit]);
-
-            // Récupération du produit
             $produit = $query->fetch(PDO::FETCH_ASSOC);
 
-            // Vérification de l'existence de l'image
             if ($produit) {
-                $produit['image_path'] = 'View/Backoffice/uploads/' . $produit['image'];
+                $produit['image_path'] = $this->getVerifiedImagePath($produit['image']);
             }
 
             return $produit;
@@ -65,6 +56,23 @@ class ProduitFront
             error_log("Erreur dans getProduit: " . $e->getMessage());
             return null;
         }
+    }/**
+     * Vérifie et retourne le chemin valide d'une image
+     * @param string $imageName Nom du fichier image
+     * @return string Chemin vérifié ou URL d'image par défaut
+     */
+    private function getVerifiedImagePath($imageName) {
+        if (empty($imageName)) {
+            return 'https://via.placeholder.com/280x230?text=Image+Indisponible';
+        }// Chemin relatif depuis le front office
+        $relativePath = '../../back office/uploads/' . $imageName; // Chemin physique absolu
+        $absolutePath = $_SERVER['DOCUMENT_ROOT'] . '/projetweb2A/back office/uploads/' . $imageName;
+
+        if (file_exists($absolutePath)) {
+            return $relativePath;
+        } else {
+            error_log("Image non trouvée: " . $absolutePath);
+            return 'https://via.placeholder.com/280x230?text=Image+Indisponible';
+        }
     }
-}
-?>
+}?>

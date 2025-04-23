@@ -1,60 +1,84 @@
-
 <?php
-
-// Déclaration de la classe config
+/**
+ * Classe de configuration pour la connexion à la base de données
+ */
 class config
-
-{   
-    // Déclaration d'une variable privée statique pour stocker l'objet PDO
+{
     private static $pdo = null;
 
-    // Méthode statique pour obtenir la connexion à la base de données
+    /**
+     * Établit une connexion PDO à la base de données
+     * @return PDO L'objet PDO pour interagir avec la base
+     * @throws PDOException Si la connexion échoue
+     */
     public static function getConnexion()
-
     {
-
-        // Vérifie si la connexion PDO n'est pas encore établie
-        if (!isset(self::$pdo)) {
-
-            $servername = "127.0.0.1";
-            $username = "root";
-            $password = "";
-            $dbname = "projetweb2a";
-            
+        if (self::$pdo === null) {
             try {
+                // Paramètres de connexion
+                $host = '127.0.0.1';  // ou 'localhost'
+                $dbname = 'projetweb2a';
+                $username = 'root';
+                $password = '';
+                
+                // Options de configuration PDO
+                $options = [
+                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                    PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8',
+                    PDO::ATTR_EMULATE_PREPARES => false,
+                    PDO::ATTR_PERSISTENT => true
+                ];
 
-                // Création d'une instance PDO pour la connexion à la base de données
-                self::$pdo = new PDO("mysql:host=$servername;dbname=$dbname",
-                        $username,
-                        $password
-                );
+                // Chaîne de connexion
+                $dsn = "mysql:host=$host;dbname=$dbname;charset=utf8";
 
-                // Configuration du mode d'erreur pour afficher les exceptions en cas d'erreur
-                self::$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+                // Tentative de connexion
+                self::$pdo = new PDO($dsn, $username, $password, $options);
+                
+                // Vérification supplémentaire que la table commande existe
+                self::verifyCommandeTable();
+                
+                return self::$pdo;
 
-                // Configuration du mode de récupération par défaut en tableau associatif
-                self::$pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-
-                // Affichage d'un message de succès si la connexion est réussie
-                echo "connected successfully";
-
-            } catch (Exception $e) {
-
-                // En cas d'erreur, affichage du message et arrêt du script
-                die('Erreur: ' . $e->getMessage());
-
+            } catch (PDOException $e) {
+                // Journalisation détaillée de l'erreur
+                error_log("Erreur de connexion DB: " . $e->getMessage());
+                throw new Exception("Impossible de se connecter à la base de données. Veuillez vérifier la configuration.");
             }
-
         }
-
-        // Retourne l'objet PDO pour réutilisation
+        
         return self::$pdo;
-
     }
 
+    /**
+     * Vérifie l'existence de la table commande
+     * @throws Exception Si la table n'existe pas
+     */
+    private static function verifyCommandeTable()
+    {
+        $stmt = self::$pdo->query("SHOW TABLES LIKE 'commande'");
+        if ($stmt->rowCount() === 0) {
+            throw new Exception("La table 'commande' n'existe pas dans la base de données.");
+        }
+        
+        // Vérification supplémentaire de la structure de la table
+        $requiredColumns = ['id_commande', 'nom', 'prenom', 'tlf', 'adresse', 'produits', 'prix_total', 'etat'];
+        $stmt = self::$pdo->query("DESCRIBE commande");
+        $existingColumns = $stmt->fetchAll(PDO::FETCH_COLUMN);
+        
+        $missingColumns = array_diff($requiredColumns, $existingColumns);
+        if (!empty($missingColumns)) {
+            throw new Exception("Colonnes manquantes dans la table 'commande': " . implode(', ', $missingColumns));
+        }
+    }
 }
 
-// Appel de la méthode pour établir la connexion
- config::getConnexion();
-
+// Test de connexion automatique (peut être commenté en production)
+try {
+    $pdo = config::getConnexion();
+    echo "";
+} catch (Exception $e) {
+    die("<strong>ERREUR CRITIQUE:</strong> " . $e->getMessage());
+}
 ?>
