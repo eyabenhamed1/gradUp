@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Types d'Examens</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700,900">
+  <link href="../assets/css/nucleo-icons.css" rel="stylesheet">
+  <link href="../assets/css/nucleo-svg.css" rel="stylesheet">
+  <link href="../assets/css/material-dashboard.css?v=3.2.0" rel="stylesheet">
+  <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 30px;
+      justify-content: center;
+      margin-top: 30px;
+    }
+
+    .card-exam {
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+      padding: 25px;
+      width: 250px;
+      text-align: center;
+      transition: transform 0.3s;
+      cursor: pointer;
+    }
+
+    .card-exam:hover {
+      transform: translateY(-5px);
+    }
+
+    .card-exam .icon {
+      font-size: 40px;
+      color: #4CAF50;
+      margin-bottom: 15px;
+    }
+
+    .card-exam h2 {
+      font-size: 20px;
+      margin-bottom: 10px;
+      color: #333;
+    }
+
+    .card-exam p {
+      font-size: 14px;
+      color: #666;
+    }
+
+    .main-title {
+      text-align: center;
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+
+    .table img {
+      width: 80px;
+      height: auto;
+      border-radius: 6px;
+    }
+
+    .btn {
+      padding: 5px 10px;
+      margin: 2px;
+      font-size: 13px;
+    }
+  </style>
+</head>
+
+<body class="g-sidenav-show bg-gray-100">
+  <!-- Sidebar -->
+  <aside class="sidenav navbar navbar-vertical navbar-expand-xs bg-white fixed-start">
+    <div class="sidenav-header">
+      <a class="navbar-brand m-0" href="#">
+        <img src="../assets/img/logo-ct-dark.png" class="navbar-brand-img" alt="logo">
+        <span class="ms-1 font-weight-bold">Gestion type exam</span>
+      </a>
+    </div>
+    <hr class="horizontal dark mt-0">
+    <ul class="navbar-nav">
+      <li class="nav-item">
+        <a class="nav-link active bg-gradient-dark text-white" href="typeexam.php">
+          <i class="material-symbols-rounded">receipt_long</i>
+          <span>Main</span>
+        </a>
+      </li>
+ 
+      <li class="nav-item">
+        <a class="nav-link active bg-gradient-dark text-white" href="type_exam.html">
+          <i class="material-symbols-rounded">assignment</i>
+          <span>Type Exam</span>
+        </a>
+      </li>
+    </ul>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content border-radius-lg">
+    <div class="container-fluid py-4">
+      <div class="card">
+        <div class="card-header pb-0">
+          <h6 class="mb-0">📚 Types d'Examens</h6>
+        </div>
+
+        <div class="card-body">
+          <div class="main-title">Sélectionnez un type d'examen</div>
+
+          <!-- Cartes -->
+          <div class="container">
+            <div class="card-exam">
+              <div class="icon"><i class="fas fa-list-ol"></i></div>
+              <h2>QCM</h2>
+              <p>Questions à Choix Multiples avec plusieurs options possibles.</p>
+            </div>
+
+            <div class="card-exam">
+              <div class="icon"><i class="fas fa-vials"></i></div>
+              <h2>TP</h2>
+              <p>Travaux pratiques réalisés en laboratoire ou en environnement réel.</p>
+            </div>
+
+            <div class="card-exam">
+              <div class="icon"><i class="fas fa-question"></i></div>
+              <h2>Question-Réponse</h2>
+              <p>Réponses écrites ou orales à des questions ouvertes.</p>
+            </div>
+
+            <div class="card-exam">
+              <div class="icon"><i class="fas fa-headphones-alt"></i></div>
+              <h2>Listening</h2>
+              <p>Compréhension orale d'un support audio, souvent en langue étrangère.</p>
+            </div>
+          </div>
+
+          <!-- Tableau des examens -->
+          <div id="examTableContainer" style="display: none; margin-top: 40px;">
+            <h4 id="examTypeTitle" class="text-center mb-3"></h4>
+            <div class="table-responsive">
+              <table class="table table-bordered text-center">
+                <thead class="bg-light">
+                  <tr>
+                    <th>ID</th>
+                    <th>Image</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="examTableBody">
+                  <!-- Dynamique -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Scripts -->
+  <script>
+    const examData = {
+      QCM: [
+        { id: 1, image: "https://via.placeholder.com/100x60?text=QCM1" },
+        { id: 2, image: "https://via.placeholder.com/100x60?text=QCM2" }
+      ],
+      TP: [
+        { id: 1, image: "https://via.placeholder.com/100x60?text=TP1" },
+        { id: 2, image: "https://via.placeholder.com/100x60?text=TP2" }
+      ],
+      "Question-Réponse": [
+        { id: 1, image: "https://via.placeholder.com/100x60?text=QR1" }
+      ],
+      Listening: [
+        { id: 1, image: "https://via.placeholder.com/100x60?text=LST1" }
+      ]
+    };
+
+    let currentType = null;
+
+    document.querySelectorAll(".card-exam").forEach(card => {
+      card.addEventListener("click", () => {
+        currentType = card.querySelector("h2").innerText;
+        showExamTable(currentType);
+      });
+    });
+
+    function showExamTable(type) {
+      const tableBody = document.getElementById("examTableBody");
+      const title = document.getElementById("examTypeTitle");
+      const container = document.getElementById("examTableContainer");
+
+      const exams = examData[type] || [];
+
+      tableBody.innerHTML = exams.map((exam, index) => `
+        <tr>
+          <td>${exam.id}</td>
+          <td><img src="${exam.image}" alt="Examen ${exam.id}"></td>
+          <td>
+            <button class="btn btn-warning btn-sm" onclick="editExam(${index})">Modifier</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteExam(${index})">Supprimer</button>
+          </td>
+        </tr>
+      `).join("");
+
+      title.innerText = `Liste des examens pour le type : ${type}`;
+      container.style.display = "block";
+      container.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function editExam(index) {
+      const exam = examData[currentType][index];
+      const newImage = prompt("Modifier l'URL de l'image :", exam.image);
+      if (newImage) {
+        examData[currentType][index].image = newImage;
+        showExamTable(currentType);
+      }
+    }
+
+    function deleteExam(index) {
+      if (confirm("Voulez-vous vraiment supprimer cet examen ?")) {
+        examData[currentType].splice(index, 1);
+        showExamTable(currentType);
+      }
+    }
+  </script>
+
+  <!-- Core JS -->
+  <script src="../assets/js/core/popper.min.js"></script>
+  <script src="../assets/js/core/bootstrap.min.js"></script>
+  <script src="../assets/js/plugins/perfect-scrollbar.min.js"></script>
+  <script src="../assets/js/plugins/smooth-scrollbar.min.js"></script>
+</body>
+</html>
