@@ -79,8 +79,44 @@ class Certificat
     public function setNiveau(string $niveau): void {
         $this->niveau = $niveau;
     }
-    
 
+    public function getAllCertificats() {
+        try {
+            $query = $this->db->prepare("SELECT * FROM certificat");
+            $query->execute();
+            return $query->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            // Log l'erreur
+            error_log($e->getMessage());
+            return []; // Retourne un tableau vide en cas d'erreur
+        }
+    }
+
+
+    public function listeCertificat() {
+        $db = config::getConnexion();
+        try {
+            $query = $db->prepare("
+                SELECT 
+                    id, nom, image, type, 
+                    DATE_FORMAT(date_demande, '%d/%m/%Y') as date_formatee,
+                    status
+                FROM certificat 
+                WHERE status = 'Valide'  // Filtre optionnel
+                ORDER BY date_demande DESC
+            ");
+            $query->execute();
+            return $query->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            // Logger l'erreur plutôt que echo en production
+            error_log('Erreur SQL: ' . $e->getMessage());
+            return []; // Retourne un tableau vide
+        }
+    }
+
+
+
+    
     // Getter et Setter pour image
     public function getImage(): string
     {

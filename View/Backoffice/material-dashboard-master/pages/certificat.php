@@ -7,6 +7,10 @@ $certificats = $controller->listeCertificat();
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.js"></script>
+
+
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <link rel="apple-touch-icon" sizes="76x76" href="../assets/img/apple-icon.png">
@@ -30,9 +34,8 @@ $certificats = $controller->listeCertificat();
       padding: 0.3rem 0.6rem;
     }
     .product-image {
-    background-color: red;
-}
-
+      background-color: red;
+    }
   </style>
 </head>
 
@@ -65,6 +68,12 @@ $certificats = $controller->listeCertificat();
           <a class="nav-link active bg-gradient-dark text-white" href="../pages/certificat.php">
             <i class="material-symbols-rounded opacity-5">receipt_long</i>
             <span class="nav-link-text ms-1">Certificats</span>
+          </a>
+        </li>
+        <li>
+          <a class="nav-link text-dark" href="../pages/cadeau.php">
+            <i class="material-symbols-rounded opacity-5">card_giftcard</i>
+            <span class="nav-link-text ms-1">Cadeaux</span>
           </a>
         </li>
       </ul>
@@ -102,60 +111,195 @@ $certificats = $controller->listeCertificat();
                 <h6 class="text-white text-capitalize ps-3">Liste des certificats</h6>
                 <div class="container mt-2">
                   <a href="addcertificat.php" class="btn btn-success">
-                    <i class="material-symbols-rounded">add</i> Ajouter un certificats
+                    <i class="material-symbols-rounded">add</i> Ajouter un certificat
                   </a>
                 </div>
               </div>
             </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            
+
+            <div class="card-body" id="pdf-container">
+  <!-- Table to display the certificates -->
+  <table class="table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>ID</th>
+        <th>Nom</th>
+        <th>Type</th>
+        <th>Objet</th>
+        <th>Date Demande</th>
+        <th>Statut</th>
+        <th>Niveau</th>
+        <th>Image</th>
+      </tr>
+    </thead>
+    <tbody>
+      <?php if (!empty($certificats)): ?>
+        <?php $index = 1; ?>
+        <?php foreach ($certificats as $certificat): ?>
+          <tr>
+            <td><?= $index ?></td>
+            <td><?= htmlspecialchars($certificat['id']) ?></td>
+            <td><?= htmlspecialchars($certificat['nom']) ?></td>
+            <td><?= htmlspecialchars($certificat['type']) ?></td>
+            <td><?= htmlspecialchars($certificat['objet']) ?></td>
+            <td>
+              <?php
+              try {
+                $date = new DateTime($certificat['date_demande']);
+                echo htmlspecialchars($date->format('Y-m-d'));
+              } catch (Exception $e) {
+                echo htmlspecialchars($certificat['date_demande']);
+              }
+              ?>
+            </td>
+            <td><?= htmlspecialchars($certificat['status']) ?></td>
+            <td><?= htmlspecialchars($certificat['niveau']) ?></td>
+            <td>
+              <?php if (!empty($certificat['image'])): ?>
+                <a href="/Uploads/<?= htmlspecialchars($certificat['image']) ?>" target="_blank">
+                  <img src="/Uploads/<?= htmlspecialchars($certificat['image']) ?>" 
+                       alt="Certificat Image" 
+                       class="certificat-image" 
+                       style="max-width: 100px;">
+                </a>
+              <?php else: ?>
+                <span class="text-muted">Aucune image</span>
+              <?php endif; ?>
+            </td>
+          </tr>
+          <?php $index++; ?>
+        <?php endforeach; ?>
+      <?php else: ?>
+        <tr>
+          <td colspan="9" class="no-certificats">Aucun certificat disponible pour le moment</td>
+        </tr>
+      <?php endif; ?>
+    </tbody>
+  </table>
+
+  <!-- Bouton pour générer le PDF -->
+  <div class="pdf-btn-container">
+    <button class="pdf-btn" onclick="generatePDF()">
+      <i class="fas fa-file-pdf"></i> Générer PDF
+    </button>
+  </div>
+</div>
+
+<script>
+  // Fonction pour générer le PDF
+  function generatePDF() {
+    const element = document.getElementById('pdf-container');
+    
+    if (element) {
+      // Options du PDF
+      const opt = {
+        margin: 10,
+        filename: 'certificats_' + new Date().toISOString().split('T')[0] + '.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { 
+          scale: 2,
+          useCORS: true // Enable CORS for images
+        },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+      
+      // Générer le PDF
+      html2pdf().set(opt).from(element).save();
+    } else {
+      alert("L'élément à convertir en PDF n'a pas été trouvé.");
+    }
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             <div class="card-body px-0 pb-2">
               <div class="table-responsive p-0">
                 <table class="table align-items-center mb-0" id="productsTable">
                   <thead>
                     <tr>
-                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">nom</th>
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Nom</th>
                       <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">Image</th>
-                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">type</th>
-                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">objet</th>
-                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">date_demande</th>
-                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">status</th>
-                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">niveau</th>
-                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">ID</th>
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Type</th>
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">Objet</th>
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">Date demande</th>
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">Status</th>
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">Niveau</th>
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">Actions</th>
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">Cadeau</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <?php foreach ($certificats as $p): ?>
+                    <?php foreach ($certificats as $certificat): ?>
                     <tr>
-                    <td>
-    <div class="d-flex px-2 py-1">
-        <div class="d-flex flex-column justify-content-center">
-            <h6 class="mb-0 text-sm"><?= htmlspecialchars($p['nom']) ?></h6>
-        </div>
-    </div>
-</td>
-<td class="align-middle text-center">
-    <?php if (!empty($p['image'])): ?>
-        <img src="<?php echo '../uploads/' . htmlspecialchars($p['image']); ?>" class="product-image" alt="Image certificat">
-    <?php else: ?>
-        <span class="text-muted">Aucune image</span>
-    <?php endif; ?>
-</td>
-<td class="align-middle text-center"><?= htmlspecialchars($p['type']) ?></td>
-<td class="align-middle text-center"><?= htmlspecialchars($p['objet']) ?></td>
-<td class="align-middle text-center"><?= htmlspecialchars($p['date_demande']) ?></td>
-<td class="align-middle text-center"><?= htmlspecialchars($p['status']) ?></td>
-<td class="align-middle text-center"><?= htmlspecialchars($p['niveau']) ?></td>
-<td class="align-middle text-center"><?= htmlspecialchars($p['id']) ?></td> <!-- Ajout de l'id -->
-
-                      
-
-                     
+                      <td>
+                        <div class="d-flex px-2 py-1">
+                          <div class="d-flex flex-column justify-content-center">
+                            <h6 class="mb-0 text-sm"><?= htmlspecialchars($certificat['nom']) ?></h6>
+                          </div>
+                        </div>
+                      </td>
+                      <td class="align-middle text-center">
+                        <?php if (!empty($certificat['image'])): ?>
+                          <img src="<?= '../uploads/' . htmlspecialchars($certificat['image']) ?>" class="product-image" alt="Image certificat">
+                        <?php else: ?>
+                          <span class="text-muted">Aucune image</span>
+                        <?php endif; ?>
+                      </td>
+                      <td class="align-middle text-center"><?= htmlspecialchars($certificat['type']) ?></td>
+                      <td class="align-middle text-center"><?= htmlspecialchars($certificat['objet']) ?></td>
+                      <td class="align-middle text-center"><?= htmlspecialchars($certificat['date_demande']) ?></td>
+                      <td class="align-middle text-center"><?= htmlspecialchars($certificat['status']) ?></td>
+                      <td class="align-middle text-center"><?= htmlspecialchars($certificat['niveau']) ?></td>
                       <td class="align-middle text-center action-buttons">
-                        <a href="certificat_update.php?id=<?= $p['id'] ?>" class="btn btn-sm btn-warning" title="Modifier">
+                        <a href="certificat_update.php?id=<?= $certificat['id'] ?>" class="btn btn-sm btn-warning" title="Modifier">
                           <i class="material-symbols-rounded">edit</i>
                         </a>
-                        <a href="certificat_delete.php?id=<?= $p['id'] ?>" class="btn btn-sm btn-danger" title="Supprimer" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce certificat ?');">
+                        <a href="certificat_delete.php?id=<?= $certificat['id'] ?>" class="btn btn-sm btn-danger" title="Supprimer" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce certificat ?');">
                           <i class="material-symbols-rounded">delete</i>
                         </a>
+                      </td>
+                      <td class="align-middle text-center">
+                        <?php if (!empty($certificat['id'])): ?>
+                          <a href="addcadeau.php?id=<?= htmlspecialchars($certificat['id']) ?>" class="btn btn-success">
+                            <i class="material-symbols-rounded">add</i> Ajouter un cadeau
+                          </a>
+                        <?php else: ?>
+                          <span class="text-danger">ID manquant</span>
+                        <?php endif; ?>
                       </td>
                     </tr>
                     <?php endforeach; ?>
@@ -174,12 +318,5 @@ $certificats = $controller->listeCertificat();
   <script src="../assets/js/core/bootstrap.min.js"></script>
   <script src="../assets/js/plugins/perfect-scrollbar.min.js"></script>
   <script src="../assets/js/plugins/smooth-scrollbar.min.js"></script>
-  <script>
-    
-   
-
-   
-   
-  </script>
 </body>
 </html>

@@ -4,6 +4,14 @@ require_once(__DIR__ . "/../Model/certificat.php");
 
 class certificatController {
 
+// Dans votre contrôleur (par exemple CertificatController.php)
+public function index() {
+    $model = new CertificatModel();
+    $data['certificat'] = $model->getAllCertificats(); // Doit retourner un tableau
+    $this->view('Frontoffice/index', $data);
+}
+    
+    
     // Créer un certificat
     public function createCertificat($nom, $type, $objet,$date_demande,$status,$niveau, $image) {
         $db = config::getConnexion();
@@ -22,6 +30,36 @@ class certificatController {
             $query->execute();
         } catch (PDOException $e) {
             echo "Erreur : " . $e->getMessage();
+        }
+    }
+
+    public function afficherCertificats() {
+        // Initialisation
+        $certificatModel = new Certificat();
+        
+        // Récupération des données
+        $certificats = $certificatModel->listeCertificat();
+        
+        // Debug (à commenter en production)
+        echo '<pre>Nombre de certificats : ' . count($certificats) . '</pre>';
+        
+        // Passage à la vue
+        $this->view('Frontoffice/index', [
+            'certificats' => $certificats,
+            'titre_page' => 'Liste des Certificats'
+        ]);
+    }
+
+    public function listeCertificats() {
+        $db = config::getConnexion();
+        try {
+            $query = $db->prepare("SELECT * FROM certificat ORDER BY nom DESC");
+            $query->execute();
+            $certificats = $query->fetchAll(PDO::FETCH_ASSOC);
+            return $certificats;
+        } catch (PDOException $e) {
+            echo "Erreur : " . $e->getMessage();
+            return [];
         }
     }
 

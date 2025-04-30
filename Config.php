@@ -15,7 +15,7 @@ class config
 
         // Vérifie si la connexion PDO n'est pas encore établie
         if (!isset(self::$pdo)) {
-
+            
             $servername = "127.0.0.1";
             $username = "root";
             $password = "";
@@ -36,7 +36,7 @@ class config
                 self::$pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
 
                 // Affichage d'un message de succès si la connexion est réussie
-                echo "connected successfully";
+                //echo "connected successfully";
 
             } catch (Exception $e) {
 
