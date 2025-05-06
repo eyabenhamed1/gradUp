@@ -54,7 +54,11 @@ $html = '
 </style>
 
 <div class="header">
+<<<<<<< HEAD
     <img src="' . $_SERVER['DOCUMENT_ROOT'] . '/assets/images/logo.jpg" class="logo" alt="Gradup Shop">
+=======
+    <img src="' . $_SERVER['DOCUMENT_ROOT'] . '/assets/images/logo.png" class="logo" alt="Gradup Shop">
+>>>>>>> 6443a76b2a8abb55847fc6e9211184100654c58b
     <div class="title">Facture de commande #' . $commande['id_commande'] . '</div>
 </div>
 

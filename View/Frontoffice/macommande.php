@@ -669,6 +669,11 @@ $cartCount = array_reduce($_SESSION['cart'], function($carry, $item) {
             align-items: center;
             gap: 8px;
         }
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+=======
+>>>>>>> 6443a76b2a8abb55847fc6e9211184100654c58b
         .btn-pdf {
     background-color: #e74c3c;
     color: white;
@@ -677,6 +682,10 @@ $cartCount = array_reduce($_SESSION['cart'], function($carry, $item) {
 .btn-pdf:hover {
     background-color: #c0392b;
 }
+<<<<<<< HEAD
+=======
+>>>>>>> 716a110 (validation des metiers)
+>>>>>>> 6443a76b2a8abb55847fc6e9211184100654c58b
         
         .footer-link a {
             color: var(--light-gray);
@@ -766,6 +775,11 @@ $cartCount = array_reduce($_SESSION['cart'], function($carry, $item) {
     </style>
 </head>
 <body>
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+=======
+>>>>>>> 6443a76b2a8abb55847fc6e9211184100654c58b
 <div id="deliveryNotification" class="delivery-notification">
     <div class="notification-header">
         <span>Livraisons prévues aujourd'hui</span>
@@ -782,6 +796,10 @@ $cartCount = array_reduce($_SESSION['cart'], function($carry, $item) {
         <?php endforeach; ?>
     </div>
 </div>
+<<<<<<< HEAD
+=======
+>>>>>>> 716a110 (validation des metiers)
+>>>>>>> 6443a76b2a8abb55847fc6e9211184100654c58b
     <header class="header">
         <div class="header-container">
             <a href="index.php" class="logo">
@@ -840,7 +858,14 @@ $cartCount = array_reduce($_SESSION['cart'], function($carry, $item) {
                         <th>PRODUITS</th>
                         <th>TOTAL</th>
                         <th>STATUT</th>
+<<<<<<< HEAD
                         
+=======
+<<<<<<< HEAD
+=======
+                        
+>>>>>>> 716a110 (validation des metiers)
+>>>>>>> 6443a76b2a8abb55847fc6e9211184100654c58b
                         <th>ACTIONS</th>
                     </tr>
                 </thead>
@@ -882,6 +907,31 @@ $cartCount = array_reduce($_SESSION['cart'], function($carry, $item) {
                                     </span>
                                 </td>
                                 <td class="action-buttons">
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+                                    <button onclick="openEditModal(
+                                        '<?= $cmd['id_commande'] ?>',
+                                        '<?= addslashes($cmd['nom']) ?>',
+                                        '<?= addslashes($cmd['prenom']) ?>',
+                                        '<?= addslashes($cmd['tlf']) ?>',
+                                        '<?= addslashes($cmd['adresse']) ?>',
+                                        '<?= $cmd['etat'] ?>'
+                                    )" 
+                                    class="btn btn-edit <?= !$isEditable ? 'btn-disabled' : '' ?>"
+                                    <?= !$isEditable ? 'title="Seulement pour commandes en cours"' : '' ?>>
+                                        <i class="fas fa-edit"></i> Modifier
+                                    </button>
+                                    
+                                    <a href="macommande.php?action=supprimer&id=<?= $cmd['id_commande'] ?>" 
+                                       onclick="return confirmDelete('<?= $cmd['id_commande'] ?>', '<?= $cmd['etat'] ?>')"
+                                       class="btn btn-delete <?= !$isEditable ? 'btn-disabled' : '' ?>"
+                                       <?= !$isEditable ? 'title="Seulement pour commandes en cours"' : '' ?>>
+                                        <i class="fas fa-trash-alt"></i> Supprimer
+                                    </a>
+                                </td>
+=======
+>>>>>>> 6443a76b2a8abb55847fc6e9211184100654c58b
     <button onclick="openEditModal(
         '<?= $cmd['id_commande'] ?>',
         '<?= addslashes($cmd['nom']) ?>',
@@ -906,6 +956,10 @@ $cartCount = array_reduce($_SESSION['cart'], function($carry, $item) {
         <i class="fas fa-file-pdf"></i> PDF
     </a>
 </td>
+<<<<<<< HEAD
+=======
+>>>>>>> 716a110 (validation des metiers)
+>>>>>>> 6443a76b2a8abb55847fc6e9211184100654c58b
                             </tr>
                             <?php
                         }
@@ -1068,6 +1122,19 @@ $cartCount = array_reduce($_SESSION['cart'], function($carry, $item) {
                     notification.style.display = 'none';
                 }, 10000);
             }
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+            
+            document.getElementById('modalCommandeId').value = id;
+            document.getElementById('modalCommandeNom').value = nom;
+            document.getElementById('modalCommandePrenom').value = prenom;
+            document.getElementById('modalCommandeTlf').value = tlf;
+            document.getElementById('modalCommandeAdresse').value = adresse;
+            document.getElementById('modalCommandeEtat').value = etat;
+            document.getElementById('editModal').style.display = 'block';
+=======
+>>>>>>> 6443a76b2a8abb55847fc6e9211184100654c58b
         <?php endif; ?>
     });
 
@@ -1077,6 +1144,10 @@ $cartCount = array_reduce($_SESSION['cart'], function($carry, $item) {
         const notification = document.getElementById('deliveryNotification');
         if (notification) {
             notification.style.display = (notification.style.display === 'block') ? 'none' : 'block';
+<<<<<<< HEAD
+=======
+>>>>>>> 716a110 (validation des metiers)
+>>>>>>> 6443a76b2a8abb55847fc6e9211184100654c58b
         }
     });
 </script>

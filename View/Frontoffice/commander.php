@@ -104,6 +104,53 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['commander'])) {
     }
 }
 ?>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('orderForm');
+
+    form.addEventListener('submit', function (e) {
+        let valid = true;
+        let errors = [];
+
+        // Récupération des champs
+        const nom = document.getElementById('nom').value.trim();
+        const prenom = document.getElementById('prenom').value.trim();
+        const adresse = document.getElementById('adresse').value.trim();
+        const tel = document.getElementById('tel').value.trim();
+
+        // Vérification nom, prénom, adresse (lettres et espaces uniquement)
+        const alphaRegex = /^[a-zA-ZÀ-ÿ\s\-']+$/;
+
+        if (!alphaRegex.test(nom)) {
+            valid = false;
+            errors.push("Le nom doit contenir uniquement des lettres.");
+        }
+
+        if (!alphaRegex.test(prenom)) {
+            valid = false;
+            errors.push("Le prénom doit contenir uniquement des lettres.");
+        }
+
+        if (!alphaRegex.test(adresse)) {
+            valid = false;
+            errors.push("L'adresse doit contenir uniquement des lettres.");
+        }
+
+        // Vérification du téléphone (8 chiffres, commence par 2, 5, 7 ou 9)
+        const telRegex = /^[2579][0-9]{7}$/;
+
+        if (!telRegex.test(tel)) {
+            valid = false;
+            errors.push("Le numéro de téléphone doit contenir 8 chiffres et commencer par 2, 5, 7 ou 9.");
+        }
+
+        if (!valid) {
+            e.preventDefault();
+            alert(errors.join("\n"));
+        }
+    });
+});
+</script>
 
 <!DOCTYPE html>
 <html lang="fr">
@@ -252,6 +299,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['commander'])) {
         </div>
 
         <?php if (!empty($panierDetails)): ?>
+<<<<<<< HEAD
         <form method="POST" id="orderForm" class="needs-validation" >
             <div class="row g-3">
             <div class="form-group">
@@ -278,6 +326,66 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['commander'])) {
 </div>
                 
                 <div class="col-md-6">
+=======
+<<<<<<< HEAD
+        <form method="POST" id="orderForm" class="needs-validation" novalidate>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label for="nom" class="form-label">Nom *</label>
+                    <input type="text" class="form-control" id="nom" name="nom" 
+                           value="<?= htmlspecialchars($_POST['nom'] ?? '') ?>" required>
+                    <div class="invalid-feedback">
+                        Veuillez entrer votre nom.
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <label for="prenom" class="form-label">Prénom *</label>
+                    <input type="text" class="form-control" id="prenom" name="prenom" 
+                           value="<?= htmlspecialchars($_POST['prenom'] ?? '') ?>" required>
+                    <div class="invalid-feedback">
+                        Veuillez entrer votre prénom.
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+=======
+        <form method="POST" id="orderForm" class="needs-validation" >
+            <div class="row g-3">
+            <div class="form-group">
+            <div class="form-group">
+    <label for="nom">Nom:</label>
+    <input type="text" class="form-control" name="nom" id="nom" 
+           required pattern="[A-Za-zÀ-ÿ\s\-']{2,50}"
+           title="Le nom doit contenir entre 2 et 50 caractères alphabétiques">
+    <div class="invalid-feedback">
+        Veuillez entrer un nom valide (2-50 caractères alphabétiques).
+    </div>
+</div>
+
+<div class="form-group">
+    <label for="prenom">Prénom:</label>
+    <input type="text" class="form-control" name="prenom" id="prenom"
+           required pattern="[A-Za-zÀ-ÿ\s\-']{2,50}"
+           title="Le prénom doit contenir entre 2 et 50 caractères alphabétiques">
+    <div class="invalid-feedback">
+        Veuillez entrer un prénom valide (2-50 caractères alphabétiques).
+    </div>
+</div>
+
+<div class="form-group">
+    <label for="adresse">Adresse:</label>
+    <textarea class="form-control" name="adresse" id="adresse" rows="3"
+              required minlength="10" maxlength="255"
+              title="L'adresse doit contenir entre 10 et 255 caractères"></textarea>
+    <div class="invalid-feedback">
+        L'adresse doit contenir entre 10 et 255 caractères.
+    </div>
+</div>
+                
+                <div class="col-md-6">
+>>>>>>> 716a110 (validation des metiers)
+>>>>>>> 6443a76b2a8abb55847fc6e9211184100654c58b
                     <label for="tel" class="form-label">Téléphone *</label>
                     <input type="tel" class="form-control" id="tel" name="tel" 
                            value="<?= htmlspecialchars($_POST['tel'] ?? '') ?>" pattern="[2579]\d{7}" required>
@@ -363,7 +471,14 @@ document.addEventListener('submit', function(e) {
 });
 
 // Validation Bootstrap
+<<<<<<< HEAD
 // Validation Bootstrap
+=======
+<<<<<<< HEAD
+=======
+// Validation Bootstrap
+>>>>>>> 716a110 (validation des metiers)
+>>>>>>> 6443a76b2a8abb55847fc6e9211184100654c58b
 (() => {
     const forms = document.querySelectorAll('.needs-validation');
     Array.from(forms).forEach(form => {

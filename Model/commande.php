@@ -283,6 +283,11 @@ public function getFormattedProducts() {
     
     return $html;
 }
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+=======
+>>>>>>> 6443a76b2a8abb55847fc6e9211184100654c58b
 public function getCommandesPourAujourdhui() {
     $conn = new mysqli("localhost", "root", "", "projetweb2a");
     $today = date('Y-m-d');
@@ -294,4 +299,8 @@ public function getCommandesPourAujourdhui() {
     
     return $result->fetch_all(MYSQLI_ASSOC);
 }
+<<<<<<< HEAD
+=======
+>>>>>>> 716a110 (validation des metiers)
+>>>>>>> 6443a76b2a8abb55847fc6e9211184100654c58b
 }

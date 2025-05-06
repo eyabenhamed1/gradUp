@@ -2,12 +2,40 @@
 require_once($_SERVER['DOCUMENT_ROOT'] . '/ProjetWeb2A/Controller/ProduitFront.php');
 $produitFront = new ProduitFront();
 
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+// Démarrer la session pour le panier
+=======
+>>>>>>> 716a110 (validation des metiers)
+>>>>>>> 6443a76b2a8abb55847fc6e9211184100654c58b
 session_start();
 
+// Initialiser le panier s'il n'existe pas
 if (!isset($_SESSION['cart'])) {
     $_SESSION['cart'] = [];
 }
 
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+// Pagination
+$page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
+$perPage = 8;
+$totalProduits = $produitFront->countProduits();
+$totalPages = max(ceil($totalProduits / $perPage), 1);
+
+if ($page > $totalPages && $totalPages > 0) {
+    header("Location: ?page=$totalPages");
+    exit;
+}
+
+// Récupérer les produits pour la page actuelle
+$produits = $produitFront->listeProduitsPagination(($page - 1) * $perPage, $perPage);
+
+// Ajouter au panier
+=======
+>>>>>>> 6443a76b2a8abb55847fc6e9211184100654c58b
 // Récupérer la catégorie sélectionnée (par défaut "tous")
 $selectedCategory = isset($_GET['category']) ? $_GET['category'] : 'tous';
 
@@ -16,6 +44,7 @@ $page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
 $perPage = 8;
 
 // Compter et récupérer les produits en fonction de la catégorie
+<<<<<<< HEAD
 // Récupérer le paramètre de tri
 // Récupérer les paramètres
 $selectedCategory = $_GET['category'] ?? 'tous';
@@ -32,6 +61,14 @@ if ($selectedCategory === 'tous') {
     $produits = $sortByRating
         ? $produitFront->listeProduitsByCategoryAndRatingPagination($selectedCategory, ($page - 1) * $perPage, $perPage)
         : $produitFront->listeProduitsByCategoryPagination($selectedCategory, ($page - 1) * $perPage, $perPage);
+=======
+if ($selectedCategory === 'tous') {
+    $totalProduits = $produitFront->countProduits();
+    $produits = $produitFront->listeProduitsPagination(($page - 1) * $perPage, $perPage);
+} else {
+    $totalProduits = $produitFront->countProduitsByCategory($selectedCategory);
+    $produits = $produitFront->listeProduitsByCategoryPagination($selectedCategory, ($page - 1) * $perPage, $perPage);
+>>>>>>> 6443a76b2a8abb55847fc6e9211184100654c58b
 }
 
 $totalPages = max(ceil($totalProduits / $perPage), 1);
@@ -40,6 +77,10 @@ if ($page > $totalPages && $totalPages > 0) {
     header("Location: ?page=$totalPages&category=$selectedCategory");
     exit;
 }
+<<<<<<< HEAD
+=======
+>>>>>>> 716a110 (validation des metiers)
+>>>>>>> 6443a76b2a8abb55847fc6e9211184100654c58b
 if (isset($_GET['add_to_cart'])) {
     $productId = (int)$_GET['add_to_cart'];
     if (isset($_SESSION['cart'][$productId])) {
@@ -54,9 +95,18 @@ if (isset($_GET['add_to_cart'])) {
     exit;
 }
 
+<<<<<<< HEAD
 // ... (le reste de votre code existant)
 
 
+=======
+<<<<<<< HEAD
+=======
+// ... (le reste de votre code existant)
+
+
+>>>>>>> 716a110 (validation des metiers)
+>>>>>>> 6443a76b2a8abb55847fc6e9211184100654c58b
 // Calculer le nombre d'articles dans le panier
 $cartCount = array_reduce($_SESSION['cart'], function($carry, $item) {
     return $carry + $item['quantity'];
@@ -78,6 +128,7 @@ $cartCount = array_reduce($_SESSION['cart'], function($carry, $item) {
             margin: 40px 0;
             overflow: hidden;
         }
+<<<<<<< HEAD
         .filter-btn i.fa-star {
     margin-right: 5px;
     color: #FFD700; /* Couleur or pour l'icône étoile */
@@ -290,6 +341,142 @@ $cartCount = array_reduce($_SESSION['cart'], function($carry, $item) {
     background-color: var(--accent);
     color: var(--white);
 }
+=======
+        
+        .slider-container {
+            display: flex;
+            transition: transform 0.5s ease;
+            padding: 10px 0;
+        }
+        
+        .slider-product-card {
+            flex: 0 0 calc(25% - 30px);
+            margin: 0 15px;
+            box-sizing: border-box;
+        }
+        
+        .slider-nav {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .slider-btn {
+            background-color: var(--dark);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 0 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .slider-btn:hover {
+            background-color: var(--accent);
+        }
+        
+        .slider-btn:disabled {
+            background-color: var(--light-gray);
+            cursor: not-allowed;
+        }
+        
+        .slider-dots {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .slider-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: var(--light-gray);
+            margin: 0 5px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .slider-dot.active {
+            background-color: var(--accent);
+        }
+        
+        @media (max-width: 992px) {
+            .slider-product-card {
+                flex: 0 0 calc(33.333% - 30px);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .slider-product-card {
+                flex: 0 0 calc(50% - 30px);
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .slider-product-card {
+                flex: 0 0 calc(100% - 30px);
+            }
+        }
+            :root {
+            --primary: #2c3e50;
+            --primary-light: #34495e;
+            --primary-dark: #1a252f;
+            --secondary: #7f8c8d;
+            --accent: #e74c3c;
+            --light: #ecf0f1;
+            --light-gray: #bdc3c7;
+            --medium-gray: #95a5a6;
+            --dark: #2c3e50;
+            --dark-gray: #34495e;
+            --white: #ffffff;
+            --black: #000000;
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        .simple-pagination {
+            display: flex;
+            justify-content: center;
+            margin: 40px 0;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        .simple-pagination a {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 0 5px;
+            background-color: #2c3e50;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+        
+        .simple-pagination a:hover {
+            background-color: #e74c3c;
+        }
+<<<<<<< HEAD
+=======
+        .filter-btn {
+    padding: 10px 20px;
+    background-color: var(--light-gray);
+    color: var(--dark);
+    border-radius: 4px;
+    text-decoration: none;
+    transition: var(--transition);
+    font-weight: 500;
+}
+
+.filter-btn:hover {
+    background-color: var(--medium-gray);
+    color: var(--white);
+}
+
+.filter-btn.active {
+    background-color: var(--accent);
+    color: var(--white);
+}
+>>>>>>> 716a110 (validation des metiers)
+>>>>>>> 6443a76b2a8abb55847fc6e9211184100654c58b
         
         .simple-pagination .current-page {
             display: inline-block;
@@ -992,6 +1179,22 @@ $cartCount = array_reduce($_SESSION['cart'], function($carry, $item) {
             border-top: 2px solid var(--light-gray);
             font-size: 1.1rem;
             font-weight: 600;
+<<<<<<< HEAD
+=======
+        }
+        
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 40px 0;
+            color: var(--medium-gray);
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: var(--light-gray);
+>>>>>>> 6443a76b2a8abb55847fc6e9211184100654c58b
         }
         
         /* Empty state */
@@ -1294,6 +1497,7 @@ $cartCount = array_reduce($_SESSION['cart'], function($carry, $item) {
         <a href="?category=fourniture" class="filter-btn <?= $selectedCategory === 'fourniture' ? 'active' : '' ?>">Fournitures</a>
         <a href="?category=informatique" class="filter-btn <?= $selectedCategory === 'informatique' ? 'active' : '' ?>">Informatique</a>
     </div>
+<<<<<<< HEAD
     <a href="?category=<?= $selectedCategory ?>" 
        class="filter-btn <?= !isset($_GET['sort']) ? 'active' : '' ?>"
        title="Tri par défaut">
@@ -1304,13 +1508,20 @@ $cartCount = array_reduce($_SESSION['cart'], function($carry, $item) {
    <i class="fas fa-star"></i> Meilleures notes
 </a>
 </div>
+=======
+
+>>>>>>> 6443a76b2a8abb55847fc6e9211184100654c58b
             
             <!-- Slider de produits -->
             <div class="product-slider">
                 <div class="slider-container" id="sliderContainer">
                     <?php foreach ($produits as $produit): ?>
                         <div class="slider-product-card">
+<<<<<<< HEAD
                             <div class="product-card visible">
+=======
+                            <div class="product-card">
+>>>>>>> 6443a76b2a8abb55847fc6e9211184100654c58b
                                 <?php if ($produit['stock'] < 5): ?>
                                     <span class="product-badge">Bientôt épuisé!</span>
                                 <?php endif; ?>
@@ -1324,7 +1535,14 @@ $cartCount = array_reduce($_SESSION['cart'], function($carry, $item) {
                                 <div class="product-info">
                                     <h3 class="product-title"><?= htmlspecialchars($produit['name']) ?></h3>
                                     <p class="product-description"><?= htmlspecialchars($produit['description']) ?></p>
+<<<<<<< HEAD
                                     
+=======
+<<<<<<< HEAD
+=======
+                                    
+>>>>>>> 716a110 (validation des metiers)
+>>>>>>> 6443a76b2a8abb55847fc6e9211184100654c58b
                                     <div class="product-price">
                                         <span class="current-price"><?= number_format($produit['prix'], 2) ?> DT</span>
                                         <?php if (isset($produit['old_price']) && $produit['old_price'] > $produit['prix']): ?>
@@ -1335,6 +1553,17 @@ $cartCount = array_reduce($_SESSION['cart'], function($carry, $item) {
                                     <div class="product-meta">
                                         <span class="product-stock">Stock: <?= (int)$produit['stock'] ?></span>
                                         <span class="product-rating">
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="far fa-star"></i>
+                                        </span>
+=======
+>>>>>>> 6443a76b2a8abb55847fc6e9211184100654c58b
     <?php 
     $avgRating = $produitFront->getAverageRating($produit['id_produit']);
     $fullStars = floor($avgRating);
@@ -1352,6 +1581,10 @@ $cartCount = array_reduce($_SESSION['cart'], function($carry, $item) {
     ?>
     <span class="rating-text">(<?= number_format($avgRating, 1) ?>)</span>
 </span>
+<<<<<<< HEAD
+=======
+>>>>>>> 716a110 (validation des metiers)
+>>>>>>> 6443a76b2a8abb55847fc6e9211184100654c58b
                                     </div>
                                     
                                     <a href="?add_to_cart=<?= $produit['id_produit'] ?>" class="add-to-cart">
@@ -1375,6 +1608,30 @@ $cartCount = array_reduce($_SESSION['cart'], function($carry, $item) {
             
             <!-- Pagination classique (vous pouvez la garder ou la supprimer) -->
             <?php if ($totalPages > 1): ?>
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+            <div class="pagination">
+                <ul class="pagination-list">
+                    <li class="pagination-item">
+                        <a href="?page=<?= max(1, $page - 1) ?>" class="pagination-link <?= $page <= 1 ? 'disabled' : '' ?>">
+                            <i class="fas fa-chevron-left"></i> Précédent
+                        </a>
+                    </li>
+                    
+                    <li class="pagination-item">
+                        <span class="pagination-link active">Page <?= $page ?> sur <?= $totalPages ?></span>
+                    </li>
+                    
+                    <li class="pagination-item">
+                        <a href="?page=<?= min($totalPages, $page + 1) ?>" class="pagination-link <?= $page >= $totalPages ? 'disabled' : '' ?>">
+                            Suivant <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+=======
+>>>>>>> 6443a76b2a8abb55847fc6e9211184100654c58b
                 <div class="pagination">
     <ul class="pagination-list">
         <li class="pagination-item">
@@ -1394,6 +1651,10 @@ $cartCount = array_reduce($_SESSION['cart'], function($carry, $item) {
         </li>
     </ul>
 </div>
+<<<<<<< HEAD
+=======
+>>>>>>> 716a110 (validation des metiers)
+>>>>>>> 6443a76b2a8abb55847fc6e9211184100654c58b
             <?php endif; ?>
         </div>
     </main>
@@ -1756,6 +2017,10 @@ $cartCount = array_reduce($_SESSION['cart'], function($carry, $item) {
                                 attachOrderEvents();
                             });
                     }
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> 6443a76b2a8abb55847fc6e9211184100654c58b
                 }
             });
         }
@@ -1785,6 +2050,40 @@ $cartCount = array_reduce($_SESSION['cart'], function($carry, $item) {
                                 attachOrderEvents();
                             });
                     }
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> 716a110 (validation des metiers)
+                }
+            });
+        }
+        
+        function removeItem(productId) {
+            const formData = new FormData();
+            formData.append('product_id', productId);
+            formData.append('remove', '1');
+            
+            fetch('update_cart.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Recharger le contenu du panier
+                    updateCartModal();
+                    
+                    // Si on est dans le modal de commande, recharger aussi ce contenu
+                    const orderModal = document.getElementById('orderModal');
+                    if (orderModal && orderModal.style.display === 'block') {
+                        fetch('commander.php')
+                            .then(response => response.text())
+                            .then(html => {
+                                document.getElementById('orderContent').innerHTML = html;
+                                attachOrderEvents();
+                            });
+                    }
+>>>>>>> 6443a76b2a8abb55847fc6e9211184100654c58b
                 }
             });
 
@@ -1856,6 +2155,7 @@ document.querySelectorAll('.product-rating').forEach(ratingContainer => {
     });
 });
     </script>
+<<<<<<< HEAD
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.getElementById('productSearch');
@@ -1901,5 +2201,11 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+=======
+<<<<<<< HEAD
+=======
+    
+>>>>>>> 716a110 (validation des metiers)
+>>>>>>> 6443a76b2a8abb55847fc6e9211184100654c58b
 </body>
 </html>

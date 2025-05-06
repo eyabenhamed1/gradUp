@@ -25,6 +25,7 @@ class ProduitFront
             return $produits;
         } catch (PDOException $e) {
             error_log("Erreur dans listeProduitsPagination: " . $e->getMessage());
+<<<<<<< HEAD
             return [];
         }
     }
@@ -114,7 +115,48 @@ class ProduitFront
             return $produits;
         } catch (PDOException $e) {
             error_log("Erreur dans listeProduitsByCategoryAndRatingPagination: " . $e->getMessage());
+=======
+>>>>>>> 6443a76b2a8abb55847fc6e9211184100654c58b
             return [];
+        }
+    }
+<<<<<<< HEAD
+=======
+    public function getAverageRating($productId) {
+        try {
+            $query = $this->pdo->prepare("SELECT AVG(note) as average FROM avis WHERE id_produit = :productId");
+            $query->execute([':productId' => $productId]);
+            $result = $query->fetch(PDO::FETCH_ASSOC);
+            return $result['average'] ? round($result['average'], 1) : 0;
+        } catch (PDOException $e) {
+            error_log("Erreur dans getAverageRating: " . $e->getMessage());
+            return 0;
+        }
+    }
+    
+    public function saveRating($productId, $rating) {
+        try {
+            $query = $this->pdo->prepare("INSERT INTO avis (id_produit, note) VALUES (:productId, :rating)");
+            $query->execute([
+                ':productId' => $productId,
+                ':rating' => $rating
+            ]);
+            return true;
+        } catch (PDOException $e) {
+            error_log("Erreur dans saveRating: " . $e->getMessage());
+            return false;
+        }
+    }
+>>>>>>> 716a110 (validation des metiers)
+    public function countProduits() {
+        try {
+            $query = $this->pdo->prepare("SELECT COUNT(*) as total FROM produit");
+            $query->execute();
+            $result = $query->fetch(PDO::FETCH_ASSOC);
+            return (int)$result['total'];
+        } catch (PDOException $e) {
+            error_log("Erreur dans countProduits: " . $e->getMessage());
+            return 0;
         }
     }
 
@@ -171,6 +213,11 @@ class ProduitFront
             return [];
         }
     }
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+=======
+>>>>>>> 6443a76b2a8abb55847fc6e9211184100654c58b
     public function countProduitsByCategory($category) {
         try {
             $query = $this->pdo->prepare("SELECT COUNT(*) as total FROM produit WHERE categorie = :category");
@@ -202,4 +249,8 @@ class ProduitFront
             return [];
         }
     }
+<<<<<<< HEAD
+=======
+>>>>>>> 716a110 (validation des metiers)
+>>>>>>> 6443a76b2a8abb55847fc6e9211184100654c58b
 }
