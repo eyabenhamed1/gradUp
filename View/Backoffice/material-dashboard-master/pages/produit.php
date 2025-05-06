@@ -12,6 +12,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['add_product'])) {
     $description = $_POST['description'];
     $prix = $_POST['prix'];
     $stock = $_POST['stock'];
+    $categorie = $_POST['categorie'];
 
     if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
         $imageTmp = $_FILES['image']['tmp_name'];
@@ -34,15 +35,16 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['add_product'])) {
                 if (
                     !empty($name) &&
                     !empty($description) &&
-                    !empty($prix)&&
-                    !empty($stock)&&
+                    !empty($prix) &&
+                    !empty($stock) &&
+                    !empty($categorie) &&
                     is_numeric($prix) &&
                     is_numeric($stock) &&
                     intval($stock) == $stock &&
                     $stock >= 0 &&
                     preg_match("/^[A-Za-zÀ-ÿ\s\-']+$/", $name)
                 ) {
-                    $controller->createProduit($name, $description, $prix, $stock, $image);
+                    $controller->createProduit($name, $description, $prix, $stock, $image, $categorie);
                     header("Location: produit.php?add=success");
                     exit();
                 } else {
@@ -66,7 +68,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['update_product'])) {
     $description = $_POST['description'];
     $prix = $_POST['prix'];
     $stock = $_POST['stock'];
-    $image = $_POST['current_image']; // par défaut, garder l'image existante
+    $categorie = $_POST['categorie'];
+    $image = $_POST['current_image'];
 
     if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
         $imageTmp = $_FILES['image']['tmp_name'];
@@ -96,13 +99,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['update_product'])) {
     if (
         !empty($name) &&
         !empty($description) &&
+        !empty($categorie) &&
         is_numeric($prix) &&
         is_numeric($stock) &&
         intval($stock) == $stock &&
         $stock >= 0 &&
         preg_match("/^[A-Za-zÀ-ÿ\s\-']+$/", $name)
     ) {
-        $controller->updateProduit($id, $name, $description, $prix, $stock, $image);
+        $controller->updateProduit($id, $name, $description, $prix, $stock, $image, $categorie);
         header("Location: produit.php?update=success");
         exit();
     } else {
@@ -267,6 +271,7 @@ if (isset($_GET['edit'])) {
                       <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Description</th>
                       <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">Prix</th>
                       <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">Stock</th>
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">Catégorie</th>
                       <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">Actions</th>
                     </tr>
                   </thead>
@@ -296,6 +301,11 @@ if (isset($_GET['edit'])) {
                       <td class="align-middle text-center">
                         <span class="badge badge-sm <?= $p['stock'] > 0 ? 'bg-gradient-success' : 'bg-gradient-danger' ?>">
                           <?= htmlspecialchars($p['stock']) ?>
+                        </span>
+                      </td>
+                      <td class="align-middle text-center">
+                        <span class="text-secondary text-xs font-weight-bold">
+                          <?= htmlspecialchars($p['categorie']) ?>
                         </span>
                       </td>
                       <td class="align-middle text-center action-buttons">
@@ -356,6 +366,16 @@ if (isset($_GET['edit'])) {
             </div>
             
             <div class="mb-3">
+              <label for="categorie">Catégorie</label>
+              <select name="categorie" id="categorie" class="form-control" required>
+                <option value="">Sélectionnez une catégorie</option>
+                <option value="informatique">Informatique</option>
+                <option value="vetement">Vêtement</option>
+                <option value="fourniture">Fourniture scolaire</option>
+              </select>
+            </div>
+            
+            <div class="mb-3">
               <label for="image">Image du produit</label>
               <input type="file" name="image" id="image" class="form-control" accept="image/*" required>
               <div class="file-info">Formats acceptés: JPG, JPEG, PNG, GIF (max 2MB)</div>
@@ -409,6 +429,15 @@ if (isset($_GET['edit'])) {
                 <label for="edit_stock">Stock</label>
                 <input type="number" name="stock" id="edit_stock" class="form-control" value="<?= htmlspecialchars($editProduct['stock']) ?>" min="0" required>
               </div>
+            </div>
+            
+            <div class="mb-3">
+              <label for="edit_categorie">Catégorie</label>
+              <select name="categorie" id="edit_categorie" class="form-control" required>
+                <option value="informatique" <?= $editProduct['categorie'] == 'informatique' ? 'selected' : '' ?>>Informatique</option>
+                <option value="vetement" <?= $editProduct['categorie'] == 'vetement' ? 'selected' : '' ?>>Vêtement</option>
+                <option value="fourniture" <?= $editProduct['categorie'] == 'fourniture' ? 'selected' : '' ?>>Fourniture scolaire</option>
+              </select>
             </div>
             
             <div class="mb-3">
@@ -470,10 +499,11 @@ if (isset($_GET['edit'])) {
       const description = document.getElementById('description');
       const prix = document.getElementById('prix');
       const stock = document.getElementById('stock');
+      const categorie = document.getElementById('categorie');
       const image = document.getElementById('image');
 
       // Réinitialiser les erreurs
-      [name, description, prix, stock, image].forEach(el => el.classList.remove('is-invalid', 'input-error'));
+      [name, description, prix, stock, categorie, image].forEach(el => el.classList.remove('is-invalid', 'input-error'));
 
       // Validation du nom
       const nameRegex = /^[A-Za-zÀ-ÿ\s\-']+$/;
@@ -497,6 +527,12 @@ if (isset($_GET['edit'])) {
       // Validation du stock
       if (!stock.value.trim() || isNaN(stock.value) || parseInt(stock.value) < 0) {
         stock.classList.add('is-invalid', 'input-error');
+        isValid = false;
+      }
+
+      // Validation de la catégorie
+      if (!categorie.value) {
+        categorie.classList.add('is-invalid', 'input-error');
         isValid = false;
       }
 
@@ -519,9 +555,10 @@ if (isset($_GET['edit'])) {
       const description = document.getElementById('edit_description');
       const prix = document.getElementById('edit_prix');
       const stock = document.getElementById('edit_stock');
+      const categorie = document.getElementById('edit_categorie');
 
       // Réinitialiser les erreurs
-      [name, description, prix, stock].forEach(el => el.classList.remove('is-invalid', 'input-error'));
+      [name, description, prix, stock, categorie].forEach(el => el.classList.remove('is-invalid', 'input-error'));
 
       // Validation du nom
       const nameRegex = /^[A-Za-zÀ-ÿ\s\-']+$/;
@@ -545,6 +582,12 @@ if (isset($_GET['edit'])) {
       // Validation du stock
       if (!stock.value.trim() || isNaN(stock.value) || parseInt(stock.value) < 0) {
         stock.classList.add('is-invalid', 'input-error');
+        isValid = false;
+      }
+
+      // Validation de la catégorie
+      if (!categorie.value) {
+        categorie.classList.add('is-invalid', 'input-error');
         isValid = false;
       }
 

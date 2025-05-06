@@ -8,7 +8,7 @@ class Commande {
     private $produits;
     private $prix_total;
     private $etat;
-    private $date_creation;
+    private $date_livraison;
 
     // Getters
     public function getIdCommande() {
@@ -43,8 +43,8 @@ class Commande {
         return $this->etat;
     }
 
-    public function getDateCreation() {
-        return $this->date_creation;
+    public function getDatelivraison() {
+        return $this->date_livraison;
     }
 
     // Setters
@@ -113,7 +113,6 @@ class Commande {
      */
     public function getCommandeById($id) {
         $conn = new mysqli("localhost", "root", "", "projetweb2a");
-        
         $stmt = $conn->prepare("SELECT * FROM commande WHERE id_commande = ?");
         $stmt->bind_param("i", $id);
         $stmt->execute();
@@ -130,6 +129,39 @@ class Commande {
      * Modifie une commande existante
      */
     public function modifierCommande($id, $data) {
+        // Validation des données
+        $errors = [];
+        
+        // Validation du nom
+        if (empty($data['nom']) || !preg_match('/^[A-Za-zÀ-ÿ\s\-\']{2,50}$/', $data['nom'])) {
+            $errors[] = "Le nom doit contenir entre 2 et 50 caractères alphabétiques";
+        }
+        
+        // Validation du prénom
+        if (empty($data['prenom']) || !preg_match('/^[A-Za-zÀ-ÿ\s\-\']{2,50}$/', $data['prenom'])) {
+            $errors[] = "Le prénom doit contenir entre 2 et 50 caractères alphabétiques";
+        }
+        
+        // Validation du téléphone
+        if (empty($data['tlf']) || !preg_match('/^[0-9]{8,15}$/', $data['tlf'])) {
+            $errors[] = "Le téléphone doit contenir entre 8 et 15 chiffres";
+        }
+        
+        // Validation de l'adresse
+        if (empty($data['adresse']) || strlen($data['adresse']) < 10 || strlen($data['adresse']) > 255) {
+            $errors[] = "L'adresse doit contenir entre 10 et 255 caractères";
+        }
+        
+        // Validation de l'état
+        $allowedStates = ['en cours', 'validée'];
+        if (empty($data['etat']) || !in_array($data['etat'], $allowedStates)) {
+            $errors[] = "L'état de la commande est invalide";
+        }
+        
+        if (!empty($errors)) {
+            return implode(", ", $errors);
+        }
+        
         $conn = new mysqli("localhost", "root", "", "projetweb2a");
         
         // Vérifier d'abord si la commande est modifiable (état "en cours")
@@ -213,7 +245,7 @@ class Commande {
      */
     public function getAllCommandes() {
         $conn = new mysqli("localhost", "root", "", "projetweb2a");
-        $result = $conn->query("SELECT * FROM commande ORDER BY date_creation DESC");
+        $result = $conn->query("SELECT * FROM commande ORDER BY date_livraison DESC");
         return $result->fetch_all(MYSQLI_ASSOC);
     }
 
@@ -223,11 +255,43 @@ class Commande {
     public function getCommandesByEtat($etat) {
         $conn = new mysqli("localhost", "root", "", "projetweb2a");
         
-        $stmt = $conn->prepare("SELECT * FROM commande WHERE etat = ? ORDER BY date_creation DESC");
+        $stmt = $conn->prepare("SELECT * FROM commande WHERE etat = ? ORDER BY date_livraison DESC");
         $stmt->bind_param("s", $etat);
         $stmt->execute();
         $result = $stmt->get_result();
         
         return $result->fetch_all(MYSQLI_ASSOC);
     }
+    // Dans votre classe Commande (model.php), ajoutez cette méthode
+public function getFormattedProducts() {
+    $produits = json_decode($this->produits, true);
+    $html = '';
+    
+    if (is_array($produits)) {
+        foreach ($produits as $produit) {
+            $html .= sprintf(
+                '<div class="produit-item">ID: %d - %s (%d x %s €)</div>',
+                htmlspecialchars($produit['id']),
+                htmlspecialchars($produit['name']),
+                htmlspecialchars($produit['quantity']),
+                number_format($produit['price'], 2)
+            );
+        }
+    } else {
+        $html = '<div>Aucun produit</div>';
+    }
+    
+    return $html;
+}
+public function getCommandesPourAujourdhui() {
+    $conn = new mysqli("localhost", "root", "", "projetweb2a");
+    $today = date('Y-m-d');
+    
+    $stmt = $conn->prepare("SELECT * FROM commande WHERE date_livraison = ?");
+    $stmt->bind_param("s", $today);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    return $result->fetch_all(MYSQLI_ASSOC);
+}
 }
