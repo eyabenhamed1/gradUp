@@ -129,6 +129,39 @@ class Commande {
      * Modifie une commande existante
      */
     public function modifierCommande($id, $data) {
+        // Validation des données
+        $errors = [];
+        
+        // Validation du nom
+        if (empty($data['nom']) || !preg_match('/^[A-Za-zÀ-ÿ\s\-\']{2,50}$/', $data['nom'])) {
+            $errors[] = "Le nom doit contenir entre 2 et 50 caractères alphabétiques";
+        }
+        
+        // Validation du prénom
+        if (empty($data['prenom']) || !preg_match('/^[A-Za-zÀ-ÿ\s\-\']{2,50}$/', $data['prenom'])) {
+            $errors[] = "Le prénom doit contenir entre 2 et 50 caractères alphabétiques";
+        }
+        
+        // Validation du téléphone
+        if (empty($data['tlf']) || !preg_match('/^[0-9]{8,15}$/', $data['tlf'])) {
+            $errors[] = "Le téléphone doit contenir entre 8 et 15 chiffres";
+        }
+        
+        // Validation de l'adresse
+        if (empty($data['adresse']) || strlen($data['adresse']) < 10 || strlen($data['adresse']) > 255) {
+            $errors[] = "L'adresse doit contenir entre 10 et 255 caractères";
+        }
+        
+        // Validation de l'état
+        $allowedStates = ['en cours', 'validée'];
+        if (empty($data['etat']) || !in_array($data['etat'], $allowedStates)) {
+            $errors[] = "L'état de la commande est invalide";
+        }
+        
+        if (!empty($errors)) {
+            return implode(", ", $errors);
+        }
+        
         $conn = new mysqli("localhost", "root", "", "projetweb2a");
         
         // Vérifier d'abord si la commande est modifiable (état "en cours")
@@ -250,4 +283,18 @@ public function getFormattedProducts() {
     
     return $html;
 }
+<<<<<<< HEAD
+=======
+public function getCommandesPourAujourdhui() {
+    $conn = new mysqli("localhost", "root", "", "projetweb2a");
+    $today = date('Y-m-d');
+    
+    $stmt = $conn->prepare("SELECT * FROM commande WHERE date_livraison = ?");
+    $stmt->bind_param("s", $today);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    return $result->fetch_all(MYSQLI_ASSOC);
+}
+>>>>>>> 716a110 (validation des metiers)
 }

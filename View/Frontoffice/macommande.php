@@ -3,7 +3,9 @@ session_start();
 require_once($_SERVER['DOCUMENT_ROOT'] . '/ProjetWeb2A/Model/Commande.php');
 
 $commande = new Commande();
-
+// Vérifier les commandes à livrer aujourd'hui
+$commandesAujourdhui = $commande->getCommandesPourAujourdhui();
+$showNotification = !empty($commandesAujourdhui);
 // Traitement de la suppression
 if (isset($_GET['action']) && $_GET['action'] == 'supprimer' && isset($_GET['id'])) {
     $id = (int)$_GET['id'];
@@ -113,6 +115,38 @@ $cartCount = array_reduce($_SESSION['cart'], function($carry, $item) {
             justify-content: space-between;
             align-items: center;
         }
+        .delivery-notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background-color: #2ecc71;
+        color: white;
+        padding: 15px;
+        border-radius: 5px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        z-index: 3000;
+        display: none;
+        max-width: 400px;
+    }
+    
+    .notification-header {
+        font-weight: bold;
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: space-between;
+    }
+    
+    .close-notification {
+        cursor: pointer;
+        font-size: 1.2em;
+    }
+    
+    .commande-item {
+        margin-bottom: 10px;
+        padding: 10px;
+        background-color: rgba(255,255,255,0.2);
+        border-radius: 4px;
+    }
         
         .logo {
             font-size: 1.8rem;
@@ -330,6 +364,124 @@ $cartCount = array_reduce($_SESSION['cart'], function($carry, $item) {
             font-weight: 600;
             color: var(--accent);
         }
+        isplay: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+}
+
+.modal-content {
+    background-color: #fff;
+    margin: 10% auto;
+    padding: 20px 30px;
+    border-radius: 15px;
+    width: 50%;
+    max-width: 600px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    position: relative;
+    animation: fadeIn 0.4s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { transform: translateY(-20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-content input,
+.modal-content select {
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    font-size: 16px;
+}
+
+.modal-content button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+.modal-content button:hover {
+    background-color: #388E3C;
+}
+
+/* Close button (optional) */
+.close-btn {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 22px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* --- Notification Styling --- */
+#deliveryNotification {
+    display: none;
+    position: fixed;
+    top: 20px;
+    right: 30px;
+    background-color: #fff;
+    color: #333;
+    padding: 15px 20px;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    z-index: 1100;
+    border-left: 5px solid #4CAF50;
+    animation: slideIn 0.5s ease;
+}
+
+@keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+.close-notification {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 18px;
+    cursor: pointer;
+    color: #aaa;
+    transition: color 0.2s;
+}
+
+.close-notification:hover {
+    color: #000;
+}
+
+/* --- Notification Icon --- */
+.nav-icon {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+    margin-right: 20px;
+}
+
+.cart-count {
+    position: absolute;
+    top: -8px;
+    right: -10px;
+    background-color: red;
+    color: white;
+    font-size: 13px;
+    padding: 4px 8px;
+    border-radius: 50%;
+    font-weight: bold;
+}
         
         .status-badge {
             padding: 5px 10px;
@@ -517,6 +669,17 @@ $cartCount = array_reduce($_SESSION['cart'], function($carry, $item) {
             align-items: center;
             gap: 8px;
         }
+<<<<<<< HEAD
+=======
+        .btn-pdf {
+    background-color: #e74c3c;
+    color: white;
+}
+
+.btn-pdf:hover {
+    background-color: #c0392b;
+}
+>>>>>>> 716a110 (validation des metiers)
         
         .footer-link a {
             color: var(--light-gray);
@@ -606,6 +769,25 @@ $cartCount = array_reduce($_SESSION['cart'], function($carry, $item) {
     </style>
 </head>
 <body>
+<<<<<<< HEAD
+=======
+<div id="deliveryNotification" class="delivery-notification">
+    <div class="notification-header">
+        <span>Livraisons prévues aujourd'hui</span>
+        <span class="close-notification">&times;</span>
+    </div>
+    <div id="deliveryCommandsList">
+        <?php foreach ($commandesAujourdhui as $cmd): ?>
+            <div class="commande-item">
+                <strong>Commande #<?= $cmd['id_commande'] ?></strong><br>
+                Client: <?= htmlspecialchars($cmd['nom']) ?> <?= htmlspecialchars($cmd['prenom']) ?><br>
+                Tél: <?= htmlspecialchars($cmd['tlf']) ?><br>
+                Adresse: <?= htmlspecialchars($cmd['adresse']) ?>
+            </div>
+        <?php endforeach; ?>
+    </div>
+</div>
+>>>>>>> 716a110 (validation des metiers)
     <header class="header">
         <div class="header-container">
             <a href="index.php" class="logo">
@@ -664,6 +846,10 @@ $cartCount = array_reduce($_SESSION['cart'], function($carry, $item) {
                         <th>PRODUITS</th>
                         <th>TOTAL</th>
                         <th>STATUT</th>
+<<<<<<< HEAD
+=======
+                        
+>>>>>>> 716a110 (validation des metiers)
                         <th>ACTIONS</th>
                     </tr>
                 </thead>
@@ -705,6 +891,7 @@ $cartCount = array_reduce($_SESSION['cart'], function($carry, $item) {
                                     </span>
                                 </td>
                                 <td class="action-buttons">
+<<<<<<< HEAD
                                     <button onclick="openEditModal(
                                         '<?= $cmd['id_commande'] ?>',
                                         '<?= addslashes($cmd['nom']) ?>',
@@ -725,6 +912,32 @@ $cartCount = array_reduce($_SESSION['cart'], function($carry, $item) {
                                         <i class="fas fa-trash-alt"></i> Supprimer
                                     </a>
                                 </td>
+=======
+    <button onclick="openEditModal(
+        '<?= $cmd['id_commande'] ?>',
+        '<?= addslashes($cmd['nom']) ?>',
+        '<?= addslashes($cmd['prenom']) ?>',
+        '<?= addslashes($cmd['tlf']) ?>',
+        '<?= addslashes($cmd['adresse']) ?>',
+        '<?= $cmd['etat'] ?>'
+    )" 
+    class="btn btn-edit <?= !$isEditable ? 'btn-disabled' : '' ?>"
+    <?= !$isEditable ? 'title="Seulement pour commandes en cours"' : '' ?>>
+        <i class="fas fa-edit"></i> Modifier
+    </button>
+    
+    <a href="macommande.php?action=supprimer&id=<?= $cmd['id_commande'] ?>" 
+       onclick="return confirmDelete('<?= $cmd['id_commande'] ?>', '<?= $cmd['etat'] ?>')"
+       class="btn btn-delete <?= !$isEditable ? 'btn-disabled' : '' ?>"
+       <?= !$isEditable ? 'title="Seulement pour commandes en cours"' : '' ?>>
+        <i class="fas fa-trash-alt"></i> Supprimer
+    </a>
+    
+    <a href="generate_pdf.php?id=<?= $cmd['id_commande'] ?>" class="btn btn-pdf" target="_blank">
+        <i class="fas fa-file-pdf"></i> PDF
+    </a>
+</td>
+>>>>>>> 716a110 (validation des metiers)
                             </tr>
                             <?php
                         }
@@ -832,12 +1045,62 @@ $cartCount = array_reduce($_SESSION['cart'], function($carry, $item) {
     </footer>
 
     <script>
-        // Fonction pour ouvrir le modal de modification
-        function openEditModal(id, nom, prenom, tlf, adresse, etat) {
-            if (etat !== 'en cours') {
-                alert("Seules les commandes 'en cours' peuvent être modifiées");
-                return;
+    // Fonction pour ouvrir le modal de modification
+    function openEditModal(id, nom, prenom, tlf, adresse, etat) {
+        if (etat !== 'en cours') {
+            alert("Seules les commandes 'en cours' peuvent être modifiées");
+            return;
+        }
+
+        document.getElementById('modalCommandeId').value = id;
+        document.getElementById('modalCommandeNom').value = nom;
+        document.getElementById('modalCommandePrenom').value = prenom;
+        document.getElementById('modalCommandeTlf').value = tlf;
+        document.getElementById('modalCommandeAdresse').value = adresse;
+        document.getElementById('modalCommandeEtat').value = etat;
+        document.getElementById('editModal').style.display = 'block';
+    }
+
+    // Fonction pour fermer le modal
+    function closeEditModal() {
+        document.getElementById('editModal').style.display = 'none';
+    }
+
+    // Fonction de confirmation de suppression
+    function confirmDelete(id, etat) {
+        if (etat !== 'en cours') {
+            alert("Seules les commandes 'en cours' peuvent être supprimées");
+            return false;
+        }
+        return confirm("Êtes-vous sûr de vouloir supprimer la commande #" + id + "?");
+    }
+
+    // Fermer le modal si on clique en dehors
+    window.onclick = function(event) {
+        const modal = document.getElementById('editModal');
+        if (event.target === modal) {
+            closeEditModal();
+        }
+    };
+
+    // Afficher la notification si nécessaire
+    document.addEventListener('DOMContentLoaded', function() {
+        <?php if ($showNotification): ?>
+            const notification = document.getElementById('deliveryNotification');
+            if (notification) {
+                notification.style.display = 'block';
+
+                // Fermer la notification
+                document.querySelector('.close-notification')?.addEventListener('click', function() {
+                    notification.style.display = 'none';
+                });
+
+                // Fermer automatiquement après 10 secondes
+                setTimeout(() => {
+                    notification.style.display = 'none';
+                }, 10000);
             }
+<<<<<<< HEAD
             
             document.getElementById('modalCommandeId').value = id;
             document.getElementById('modalCommandeNom').value = nom;
@@ -846,29 +1109,20 @@ $cartCount = array_reduce($_SESSION['cart'], function($carry, $item) {
             document.getElementById('modalCommandeAdresse').value = adresse;
             document.getElementById('modalCommandeEtat').value = etat;
             document.getElementById('editModal').style.display = 'block';
+=======
+        <?php endif; ?>
+    });
+
+    // Gestion du clic sur l'icône de notification
+    document.getElementById('deliveryNotificationIcon')?.addEventListener('click', function(e) {
+        e.preventDefault();
+        const notification = document.getElementById('deliveryNotification');
+        if (notification) {
+            notification.style.display = (notification.style.display === 'block') ? 'none' : 'block';
+>>>>>>> 716a110 (validation des metiers)
         }
-        
-        // Fonction pour fermer le modal
-        function closeEditModal() {
-            document.getElementById('editModal').style.display = 'none';
-        }
-        
-        // Fonction de confirmation de suppression
-        function confirmDelete(id, etat) {
-            if (etat !== 'en cours') {
-                alert("Seules les commandes 'en cours' peuvent être supprimées");
-                return false;
-            }
-            return confirm("Êtes-vous sûr de vouloir supprimer la commande #" + id + "?");
-        }
-        
-        // Fermer le modal si on clique en dehors
-        window.onclick = function(event) {
-            const modal = document.getElementById('editModal');
-            if (event.target === modal) {
-                closeEditModal();
-            }
-        }
-    </script>
+    });
+</script>
+
 </body>
 </html>

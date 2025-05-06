@@ -2,7 +2,10 @@
 require_once($_SERVER['DOCUMENT_ROOT'] . '/ProjetWeb2A/Controller/ProduitFront.php');
 $produitFront = new ProduitFront();
 
+<<<<<<< HEAD
 // Démarrer la session pour le panier
+=======
+>>>>>>> 716a110 (validation des metiers)
 session_start();
 
 // Initialiser le panier s'il n'existe pas
@@ -10,6 +13,7 @@ if (!isset($_SESSION['cart'])) {
     $_SESSION['cart'] = [];
 }
 
+<<<<<<< HEAD
 // Pagination
 $page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
 $perPage = 8;
@@ -25,6 +29,30 @@ if ($page > $totalPages && $totalPages > 0) {
 $produits = $produitFront->listeProduitsPagination(($page - 1) * $perPage, $perPage);
 
 // Ajouter au panier
+=======
+// Récupérer la catégorie sélectionnée (par défaut "tous")
+$selectedCategory = isset($_GET['category']) ? $_GET['category'] : 'tous';
+
+// Pagination
+$page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
+$perPage = 8;
+
+// Compter et récupérer les produits en fonction de la catégorie
+if ($selectedCategory === 'tous') {
+    $totalProduits = $produitFront->countProduits();
+    $produits = $produitFront->listeProduitsPagination(($page - 1) * $perPage, $perPage);
+} else {
+    $totalProduits = $produitFront->countProduitsByCategory($selectedCategory);
+    $produits = $produitFront->listeProduitsByCategoryPagination($selectedCategory, ($page - 1) * $perPage, $perPage);
+}
+
+$totalPages = max(ceil($totalProduits / $perPage), 1);
+
+if ($page > $totalPages && $totalPages > 0) {
+    header("Location: ?page=$totalPages&category=$selectedCategory");
+    exit;
+}
+>>>>>>> 716a110 (validation des metiers)
 if (isset($_GET['add_to_cart'])) {
     $productId = (int)$_GET['add_to_cart'];
     if (isset($_SESSION['cart'][$productId])) {
@@ -39,6 +67,12 @@ if (isset($_GET['add_to_cart'])) {
     exit;
 }
 
+<<<<<<< HEAD
+=======
+// ... (le reste de votre code existant)
+
+
+>>>>>>> 716a110 (validation des metiers)
 // Calculer le nombre d'articles dans le panier
 $cartCount = array_reduce($_SESSION['cart'], function($carry, $item) {
     return $carry + $item['quantity'];
@@ -172,6 +206,28 @@ $cartCount = array_reduce($_SESSION['cart'], function($carry, $item) {
         .simple-pagination a:hover {
             background-color: #e74c3c;
         }
+<<<<<<< HEAD
+=======
+        .filter-btn {
+    padding: 10px 20px;
+    background-color: var(--light-gray);
+    color: var(--dark);
+    border-radius: 4px;
+    text-decoration: none;
+    transition: var(--transition);
+    font-weight: 500;
+}
+
+.filter-btn:hover {
+    background-color: var(--medium-gray);
+    color: var(--white);
+}
+
+.filter-btn.active {
+    background-color: var(--accent);
+    color: var(--white);
+}
+>>>>>>> 716a110 (validation des metiers)
         
         .simple-pagination .current-page {
             display: inline-block;
@@ -703,6 +759,67 @@ $cartCount = array_reduce($_SESSION['cart'], function($carry, $item) {
             height: 100%;
             background-color: rgba(0,0,0,0.5);
         }
+        .product-rating {
+    color: #FFD700; /* Couleur dorée pour les étoiles */
+    font-size: 0.9rem;
+    cursor: pointer;
+    position: relative;
+}
+
+.product-rating .star-rated {
+    color: #FFD700;
+}
+
+.product-rating i {
+    transition: all 0.2s ease;
+}
+
+.product-rating .rating-text {
+    color: var(--medium-gray);
+    font-size: 0.8rem;
+    margin-left: 5px;
+}
+
+.rating-stars {
+    display: inline-block;
+    unicode-bidi: bidi-override;
+    color: #ccc;
+    font-size: 25px;
+    height: 25px;
+    width: 125px;
+    margin: 0 auto;
+    position: relative;
+    padding: 0;
+}
+
+.rating-stars span {
+    display: block;
+    position: absolute;
+    overflow: hidden;
+    top: 0;
+    left: 0;
+}
+
+.rating-stars span:before {
+    content: "★★★★★";
+    color: #FFD700;
+    font-size: 25px;
+    height: 25px;
+    width: 125px;
+}
+
+.star-rating-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 10px 0;
+}
+
+.star-rating-value {
+    margin-top: 5px;
+    font-size: 0.9rem;
+    color: var(--medium-gray);
+}
         
         .modal-content {
             background-color: var(--white);
@@ -838,8 +955,17 @@ $cartCount = array_reduce($_SESSION['cart'], function($carry, $item) {
         </div>
     </header>
     <main class="main">
-        <div class="container">
-            <h1 class="page-title">Notre Boutique</h1>
+    <div class="container">
+    <h1 class="page-title">Notre Boutique</h1>
+    
+    <!-- Ajoutez ce menu de filtrage -->
+    <div class="category-filter" style="margin-bottom: 30px; display: flex; justify-content: center; gap: 15px;">
+        <a href="?category=tous" class="filter-btn <?= $selectedCategory === 'tous' ? 'active' : '' ?>">Tous</a>
+        <a href="?category=vetement" class="filter-btn <?= $selectedCategory === 'vetement' ? 'active' : '' ?>">Vêtements</a>
+        <a href="?category=fourniture" class="filter-btn <?= $selectedCategory === 'fourniture' ? 'active' : '' ?>">Fournitures</a>
+        <a href="?category=informatique" class="filter-btn <?= $selectedCategory === 'informatique' ? 'active' : '' ?>">Informatique</a>
+    </div>
+
             
             <!-- Slider de produits -->
             <div class="product-slider">
@@ -860,6 +986,10 @@ $cartCount = array_reduce($_SESSION['cart'], function($carry, $item) {
                                 <div class="product-info">
                                     <h3 class="product-title"><?= htmlspecialchars($produit['name']) ?></h3>
                                     <p class="product-description"><?= htmlspecialchars($produit['description']) ?></p>
+<<<<<<< HEAD
+=======
+                                    
+>>>>>>> 716a110 (validation des metiers)
                                     <div class="product-price">
                                         <span class="current-price"><?= number_format($produit['prix'], 2) ?> DT</span>
                                         <?php if (isset($produit['old_price']) && $produit['old_price'] > $produit['prix']): ?>
@@ -870,12 +1000,32 @@ $cartCount = array_reduce($_SESSION['cart'], function($carry, $item) {
                                     <div class="product-meta">
                                         <span class="product-stock">Stock: <?= (int)$produit['stock'] ?></span>
                                         <span class="product-rating">
+<<<<<<< HEAD
                                             <i class="fas fa-star"></i>
                                             <i class="fas fa-star"></i>
                                             <i class="fas fa-star"></i>
                                             <i class="fas fa-star"></i>
                                             <i class="far fa-star"></i>
                                         </span>
+=======
+    <?php 
+    $avgRating = $produitFront->getAverageRating($produit['id_produit']);
+    $fullStars = floor($avgRating);
+    $hasHalfStar = ($avgRating - $fullStars) >= 0.5;
+    
+    for ($i = 1; $i <= 5; $i++) {
+        if ($i <= $fullStars) {
+            echo '<i class="fas fa-star star-rated" data-rating="'.$i.'"></i>';
+        } elseif ($hasHalfStar && $i == $fullStars + 1) {
+            echo '<i class="fas fa-star-half-alt star-rated" data-rating="'.$i.'"></i>';
+        } else {
+            echo '<i class="far fa-star" data-rating="'.$i.'"></i>';
+        }
+    }
+    ?>
+    <span class="rating-text">(<?= number_format($avgRating, 1) ?>)</span>
+</span>
+>>>>>>> 716a110 (validation des metiers)
                                     </div>
                                     
                                     <a href="?add_to_cart=<?= $produit['id_produit'] ?>" class="add-to-cart">
@@ -899,6 +1049,7 @@ $cartCount = array_reduce($_SESSION['cart'], function($carry, $item) {
             
             <!-- Pagination classique (vous pouvez la garder ou la supprimer) -->
             <?php if ($totalPages > 1): ?>
+<<<<<<< HEAD
             <div class="pagination">
                 <ul class="pagination-list">
                     <li class="pagination-item">
@@ -918,6 +1069,27 @@ $cartCount = array_reduce($_SESSION['cart'], function($carry, $item) {
                     </li>
                 </ul>
             </div>
+=======
+                <div class="pagination">
+    <ul class="pagination-list">
+        <li class="pagination-item">
+            <a href="?page=<?= max(1, $page - 1) ?>&category=<?= $selectedCategory ?>" class="pagination-link <?= $page <= 1 ? 'disabled' : '' ?>">
+                <i class="fas fa-chevron-left"></i> Précédent
+            </a>
+        </li>
+        
+        <li class="pagination-item">
+            <span class="pagination-link active">Page <?= $page ?> sur <?= $totalPages ?></span>
+        </li>
+        
+        <li class="pagination-item">
+            <a href="?page=<?= min($totalPages, $page + 1) ?>&category=<?= $selectedCategory ?>" class="pagination-link <?= $page >= $totalPages ? 'disabled' : '' ?>">
+                Suivant <i class="fas fa-chevron-right"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+>>>>>>> 716a110 (validation des metiers)
             <?php endif; ?>
         </div>
     </main>
@@ -1280,6 +1452,38 @@ $cartCount = array_reduce($_SESSION['cart'], function($carry, $item) {
                                 attachOrderEvents();
                             });
                     }
+<<<<<<< HEAD
+                }
+            });
+        }
+        
+        function removeItem(productId) {
+            const formData = new FormData();
+            formData.append('product_id', productId);
+            formData.append('remove', '1');
+            
+            fetch('update_cart.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Recharger le contenu du panier
+                    updateCartModal();
+                    
+                    // Si on est dans le modal de commande, recharger aussi ce contenu
+                    const orderModal = document.getElementById('orderModal');
+                    if (orderModal && orderModal.style.display === 'block') {
+                        fetch('commander.php')
+                            .then(response => response.text())
+                            .then(html => {
+                                document.getElementById('orderContent').innerHTML = html;
+                                attachOrderEvents();
+                            });
+                    }
+=======
+>>>>>>> 716a110 (validation des metiers)
                 }
             });
         }
@@ -1311,7 +1515,78 @@ $cartCount = array_reduce($_SESSION['cart'], function($carry, $item) {
                     }
                 }
             });
+
         }
+        // Gestion du système d'évaluation
+document.querySelectorAll('.product-rating').forEach(ratingContainer => {
+    const stars = ratingContainer.querySelectorAll('i');
+    const productCard = ratingContainer.closest('.product-card');
+    const productId = productCard.querySelector('.add-to-cart').getAttribute('href').split('=')[1];
+    
+    stars.forEach(star => {
+        star.addEventListener('click', function() {
+            const rating = this.getAttribute('data-rating');
+            
+            // Envoyer la note au serveur
+            fetch('save_rating.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `product_id=${productId}&rating=${rating}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Mettre à jour l'affichage
+                    const avgRating = data.average;
+                    const fullStars = Math.floor(avgRating);
+                    const hasHalfStar = (avgRating - fullStars) >= 0.5;
+                    
+                    stars.forEach((s, i) => {
+                        if (i < fullStars) {
+                            s.classList.remove('far', 'fa-star-half-alt');
+                            s.classList.add('fas');
+                        } else if (hasHalfStar && i === fullStars) {
+                            s.classList.remove('far', 'fas');
+                            s.classList.add('fa-star-half-alt');
+                        } else {
+                            s.classList.remove('fas', 'fa-star-half-alt');
+                            s.classList.add('far');
+                        }
+                    });
+                    
+                    // Mettre à jour le texte
+                    const ratingText = ratingContainer.querySelector('.rating-text');
+                    if (ratingText) {
+                        ratingText.textContent = '(' + avgRating.toFixed(1) + ')';
+                    }
+                }
+            });
+        });
+        
+        star.addEventListener('mouseover', function() {
+            const rating = this.getAttribute('data-rating');
+            stars.forEach((s, i) => {
+                if (i < rating) {
+                    s.style.color = '#FFD700';
+                }
+            });
+        });
+        
+        star.addEventListener('mouseout', function() {
+            stars.forEach(s => {
+                if (s.classList.contains('far')) {
+                    s.style.color = '';
+                }
+            });
+        });
+    });
+});
     </script>
+<<<<<<< HEAD
+=======
+    
+>>>>>>> 716a110 (validation des metiers)
 </body>
 </html>
