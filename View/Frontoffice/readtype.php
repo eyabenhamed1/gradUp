@@ -17,6 +17,7 @@ $types = $controller->getAllTypes(); // Get all types
   <link href="../assets/css/nucleo-svg.css" rel="stylesheet" />
   <link href="../assets/css/material-dashboard.css?v=3.2.0" rel="stylesheet" />
   <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     body {
       margin: 0;
@@ -135,6 +136,34 @@ $types = $controller->getAllTypes(); // Get all types
       color: #6c757d;
       font-style: italic;
     }
+    /* Filter styles */
+    .filter-container {
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .filter-container label {
+      font-weight: 500;
+      color: #333;
+    }
+    .filter-container select {
+      padding: 8px 12px;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+      background-color: white;
+    }
+    .filter-container button {
+      padding: 8px 16px;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .filter-container button:hover {
+      background-color: #2980b9;
+    }
   </style>
 </head>
 
@@ -152,6 +181,7 @@ $types = $controller->getAllTypes(); // Get all types
       <a href="#">Événements</a>
       <a href="#">Dons</a>
       <a href="read_corection1.php?"#>Corrections</a>
+      <a href="chat_client.php?"#>chatbot</a>
     </nav>
   </header>
 
@@ -166,19 +196,38 @@ $types = $controller->getAllTypes(); // Get all types
     <h2 class="section-title">Gestion des Types d'Examens</h2>
 
     <div class="card-body">
+      <!-- Filter section -->
+<div class="filter-container">
+  <label for="typeFilter">Filtrer par type :</label>
+  <select id="typeFilter">
+    <option value="">Tous les types</option>
+    <?php 
+    $uniqueTypes = [];
+    foreach ($types as $type) {
+      if (!in_array($type['type_name'], $uniqueTypes)) {
+        $uniqueTypes[] = $type['type_name'];
+        echo '<option value="'.htmlspecialchars($type['type_name']).'">'.htmlspecialchars($type['type_name']).'</option>';
+      }
+    }
+    ?>
+  </select>
+  <button onclick="filterExams()">Filtrer</button>
+</div>
+
       <!-- Table to display the types -->
-      <table class="table">
+      <table class="table" id="examsTable">
         <thead>
-          <tr>
-            <th>#</th>
-            <th>Nom du Type</th>
-            <th>Image</th>
-          </tr>
+      <tr>
+        <th>Id Exam</th>
+        <th>Nom du Type</th>
+        <th>Image</th>
+        <th>Actions</th>
+      </tr>
         </thead>
         <tbody>
           <?php foreach ($types as $index => $type): ?>
-            <tr>
-              <td><?= $index + 1 ?></td>
+            <tr class="exam-row" data-type="<?= htmlspecialchars($type['type_name']) ?>">
+              <td><?= htmlspecialchars($type['id']) ?></td>
               <td><?= htmlspecialchars($type['type_name']) ?></td>
               <td>
                 <?php if (!empty($type['image'])): ?>
@@ -191,6 +240,16 @@ $types = $controller->getAllTypes(); // Get all types
                 <?php else: ?>
                   <span class="text-muted">Aucune image</span>
                 <?php endif; ?>
+              </td>
+              <td>
+                
+                <?php if (!empty($type['image'])): ?>
+  <button class="pdf-btn" style="background-color:rgb(114, 105, 233); color: white; border: none; padding: 10px 16px; border-radius: 6px; font-size: 16px; cursor: pointer;" onclick="generateSinglePDF('<?= htmlspecialchars($type['image']) ?>', '<?= htmlspecialchars($type['id']) ?>')">
+    <i class="fas fa-file-pdf" style="margin-right: 8px;"></i> Télécharger PDF
+  </button>
+<?php endif; ?>
+
+
               </td>
             </tr>
           <?php endforeach; ?>
@@ -208,5 +267,62 @@ $types = $controller->getAllTypes(); // Get all types
   <script src="../assets/js/core/bootstrap.min.js"></script>
   <script src="../assets/js/plugins/perfect-scrollbar.min.js"></script>
   <script src="../assets/js/plugins/smooth-scrollbar.min.js"></script>
+  
+  <script>
+    function filterExams() {
+      const filterValue = document.getElementById('typeFilter').value.toLowerCase();
+      const rows = document.querySelectorAll('.exam-row');
+      
+      rows.forEach(row => {
+        const rowType = row.getAttribute('data-type').toLowerCase();
+        if (filterValue === '' || rowType.includes(filterValue)) {
+          row.style.display = '';
+        } else {
+          row.style.display = 'none';
+        }
+      });
+    }
+    
+    // Add event listener for Enter key in filter select
+    document.getElementById('typeFilter').addEventListener('keyup', function(event) {
+      if (event.key === 'Enter') {
+        filterExams();
+      }
+    });
+  </script>
+
+  <script>
+    async function generateSinglePDF(imagePath, examId) {
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF();
+      
+      const fullImagePath = '/ProjetWeb2A/View/Backoffice/material-dashboard-master/uploads/' + imagePath;
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.src = fullImagePath;
+
+      await new Promise(resolve => {
+        img.onload = () => {
+          const pageWidth = pdf.internal.pageSize.getWidth();
+          const ratio = img.height / img.width;
+          const pageHeight = pageWidth * ratio;
+
+          pdf.addImage(img, 'JPEG', 0, 0, pageWidth, pageHeight);
+          
+          // Add exam ID as filename
+          const dateStr = new Date().toISOString().slice(0, 10);
+          pdf.save('correction_exam_' + examId + '_' + dateStr + '.pdf');
+          resolve();
+        };
+        
+        img.onerror = () => {
+          alert("Erreur lors du chargement de l'image.");
+          resolve();
+        };
+      });
+    }
+  </script>
+
+  
 </body>
 </html>

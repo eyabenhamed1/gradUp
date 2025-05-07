@@ -3,6 +3,7 @@ require_once(__DIR__ . "/../Config.php");
 
 class Correction1 {
     private $conn;
+    private $id_exam;
 
     // Constructor to inject the database connection
     public function __construct($conn) {
@@ -44,12 +45,33 @@ class Correction1 {
         }
     }
 
+    // Method to get one correction by exam ID
+    public function getOneByExamId($id_exam) {
+        $sql = "SELECT * FROM correction1 WHERE id_exam = ?";
+        $stmt = $this->conn->prepare($sql);
+
+        if ($stmt === false) {
+            return null;
+        }
+
+        $stmt->bindValue(1, $id_exam, PDO::PARAM_INT);
+        $stmt->execute();
+
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($result) {
+            return $result;
+        } else {
+            return null;
+        }
+    }
+
 
 
     
     // Method to create a new correction
-    public function create($id_cor, $image2, $remarque, $note) {
-        $sql = "INSERT INTO correction1 (id_cor, image2, remarque, note) VALUES (?, ?, ?, ?)";
+    public function create($id_cor, $id_exam, $image2, $remarque, $note) {
+        // Remove id_cor from insert statement to let DB auto-increment it
+        $sql = "INSERT INTO correction1 (id_exam, image2, remarque, note) VALUES (?, ?, ?, ?)";
         $stmt = $this->conn->prepare($sql);
 
         if ($stmt === false) {
@@ -57,7 +79,8 @@ class Correction1 {
         }
 
         // Bind parameters and execute
-        $stmt->bindValue(1, $id_cor, PDO::PARAM_INT);  // PDO uses bindValue() instead of bind_param
+        // No binding for id_cor since it's auto-increment
+        $stmt->bindValue(1, $id_exam, PDO::PARAM_INT);  // Bind the first parameter as an integer (foreign key)
         $stmt->bindValue(2, $image2, PDO::PARAM_STR);  // Bind the second parameter as a string
         $stmt->bindValue(3, $remarque, PDO::PARAM_STR); // Bind the third parameter as a string
         $stmt->bindValue(4, $note, PDO::PARAM_STR);     // Bind the fourth parameter as a string
@@ -72,8 +95,8 @@ class Correction1 {
     }
 
     // Method to update a correction
-    public function update($id_cor, $image2, $remarque, $note) {
-        $sql = "UPDATE correction1 SET image2 = ?, remarque = ?, note = ? WHERE id_cor = ?";
+    public function update($id_cor, $id_exam, $image2, $remarque, $note) {
+        $sql = "UPDATE correction1 SET id_exam = ?, image2 = ?, remarque = ?, note = ? WHERE id_cor = ?";
         $stmt = $this->conn->prepare($sql);
 
         if ($stmt === false) {
@@ -81,10 +104,11 @@ class Correction1 {
         }
 
         // Bind parameters and execute
-        $stmt->bindValue(1, $image2, PDO::PARAM_STR);  // Bind the first parameter as a string
-        $stmt->bindValue(2, $remarque, PDO::PARAM_STR); // Bind the second parameter as a string
-        $stmt->bindValue(3, $note, PDO::PARAM_STR);     // Bind the third parameter as a string
-        $stmt->bindValue(4, $id_cor, PDO::PARAM_INT);   // Bind the fourth parameter as an integer
+        $stmt->bindValue(1, $id_exam, PDO::PARAM_INT);  // Bind the first parameter as an integer (foreign key)
+        $stmt->bindValue(2, $image2, PDO::PARAM_STR);  // Bind the second parameter as a string
+        $stmt->bindValue(3, $remarque, PDO::PARAM_STR); // Bind the third parameter as a string
+        $stmt->bindValue(4, $note, PDO::PARAM_STR);     // Bind the fourth parameter as a string
+        $stmt->bindValue(5, $id_cor, PDO::PARAM_INT);   // Bind the fifth parameter as an integer
 
         $result = $stmt->execute();
         

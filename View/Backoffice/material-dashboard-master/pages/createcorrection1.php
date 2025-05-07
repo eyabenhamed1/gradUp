@@ -1,10 +1,14 @@
 <?php
 session_start();
 require_once(__DIR__ . "/../../../../controller/Correction1Controller.php");
+require_once(__DIR__ . "/../../../../controller/typeexamcontroller.php");
 require_once(__DIR__ . "/../../../../Config.php");
 
 $pdo = config::getConnexion();
 $controller = new Correction1($pdo);
+
+$typeExamController = new TypeExamController();
+$allTypes = $typeExamController->getAllTypes();
 
 $successMessage = "";
 $errorMessage = "";
@@ -21,10 +25,16 @@ if ($examId) {
 }
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    $id_cor = $_POST['id_cor'] ?? $examId;
+    // Remove manual id_cor, let DB auto-increment it
     $remarque = $_POST['remarque'] ?? '';
     $note = $_POST['note'] ?? '';
     $image2 = '';
+
+    // Get the submitted id_exam directly
+    $id_exam = $_POST['id_exam'] ?? null;
+    if (!$id_exam) {
+        $errorMessage = "Type d'examen invalide sélectionné.";
+    }
 
     // Validate note format and value
     $noteValid = false;
@@ -51,9 +61,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     if ($noteValid) {
         // Verify this exam doesn't already have a correction
-        $existingCorrection = $controller->getOne($id_cor);
+        $existingCorrection = $controller->getOne($examId);
         if ($existingCorrection) {
-            $errorMessage = "Une correction existe déjà pour cet examen (ID: $id_cor)";
+            $errorMessage = "Une correction existe déjà pour cet examen (ID: $examId)";
         } else {
             if (isset($_FILES['image2']) && $_FILES['image2']['error'] === UPLOAD_ERR_OK) {
                 $imageTmp = $_FILES['image2']['tmp_name'];
@@ -73,19 +83,25 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     if (move_uploaded_file($imageTmp, $targetFilePath)) {
                         $image2 = $newFileName;
 
-                        if (!empty($id_cor)) {
-                            $result = $controller->create($id_cor, $image2, $remarque, $note);
-                            
-                            if ($result === true) {
-                                unset($_SESSION['exam_id']); // Clear the session ID after successful creation
-                                header("Location: correction1.php?add=success");
-                                exit();
-                            } else {
-                                $errorMessage = "Erreur lors de l'ajout: " . $result;
-                            }
+                if (!empty($id_exam)) {
+                    // Double check if correction exists for id_exam before creating to avoid DB error
+                    $correctionExists = $controller->getOneByExamId($id_exam);
+                    if ($correctionExists) {
+                        $errorMessage = "Une correction existe déjà pour cet examen (ID: $id_exam)";
+                    } else {
+                        $result = $controller->create(null, $id_exam, $image2, $remarque, $note);
+                        
+                        if ($result === true) {
+                            unset($_SESSION['exam_id']); // Clear the session ID after successful creation
+                            header("Location: correction1.php?add=success");
+                            exit();
                         } else {
-                            $errorMessage = "ID d'examen manquant.";
+                            $errorMessage = "Erreur lors de l'ajout: " . $result;
                         }
+                    }
+                } else {
+                    $errorMessage = "ID d'examen manquant.";
+                }
                     } else {
                         $errorMessage = "Erreur lors de l'upload de l'image.";
                     }
@@ -300,22 +316,25 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
               <div class="row mb-4">
                 <div class="col-md-6">
                   <div class="form-group">
-                    <label for="id_cor" class="form-label">Identifiant de l'Examen</label>
-                    <input type="text" 
-                           name="id_cor" 
-                           id="id_cor" 
-                           class="form-control <?= $examId ? 'bg-gray-200' : '' ?>" 
-                           value="<?= htmlspecialchars($examId ?? '') ?>" 
-                           <?= $examId ? 'readonly disabled' : 'required' ?>
-                           placeholder="EX123456">
-                    <?php if ($examId): ?>
-                      <small class="form-text">Cet identifiant a été récupéré automatiquement depuis votre session</small>
-                    <?php else: ?>
-                      <small class="form-text">Entrez l'identifiant unique de l'examen à corriger</small>
-                    <?php endif; ?>
+                    <!-- Removed id_cor input for auto-increment -->
                   </div>
                 </div>
-                
+
+                <div class="col-md-6">
+                  <div class="form-group">
+                   <label for="id_exam" class="form-label">id d'Examen (clé étrangère)</label>
+                     <select name="id_exam" id="id_exam" class="form-control" required>
+                         <option value="" disabled selected>Choisissez un id d'examen</option>
+                         <?php foreach ($allTypes as $type): ?>
+                            <option value="<?= htmlspecialchars($type['id']) ?>">
+                             <?= htmlspecialchars($type['id']) ?>
+                            </option>
+                         <?php endforeach; ?>
+                       </select>
+                      <small class="form-text">Sélectionnez le id d'examen associé</small>
+                   </div>
+                 </div>
+
                 <div class="col-md-6">
                   <div class="form-group">
                     <label for="note" class="form-label">Note Attribuée</label>

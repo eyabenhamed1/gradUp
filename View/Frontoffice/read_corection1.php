@@ -2,7 +2,6 @@
 require_once($_SERVER['DOCUMENT_ROOT'].'/ProjetWeb2A/Config.php');
 require_once($_SERVER['DOCUMENT_ROOT'].'/ProjetWeb2A/Model/correction1.php');
 
-// Get database connection
 $conn = config::getConnexion();
 $correctionModel = new Correction1($conn);
 $corrections = $correctionModel->getAll();
@@ -20,8 +19,7 @@ $corrections = $correctionModel->getAll();
   <link href="../assets/css/nucleo-svg.css" rel="stylesheet" />
   <link href="../assets/css/material-dashboard.css?v=3.2.0" rel="stylesheet" />
   <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
-  <!-- Ajout de la bibliothèque html2pdf -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     body {
       margin: 0;
@@ -54,8 +52,8 @@ $corrections = $correctionModel->getAll();
       padding: 30px;
       background-color: #f8f9fa;
       min-height: calc(100vh - 200px);
-      position: relative; /* Ajouté pour le positionnement du bouton PDF */
-      padding-bottom: 70px; /* Espace pour le bouton PDF */
+      position: relative;
+      padding-bottom: 70px;
     }
     .card-body {
       background-color: #fff;
@@ -72,8 +70,7 @@ $corrections = $correctionModel->getAll();
       border-radius: 8px;
       overflow: hidden;
     }
-    .table th,
-    .table td {
+    .table th, .table td {
       padding: 12px 15px;
       text-align: left;
       border-bottom: 1px solid #ddd;
@@ -143,36 +140,42 @@ $corrections = $correctionModel->getAll();
       color: #6c757d;
       font-style: italic;
     }
-    /* Style pour le bouton PDF - Nouvelle position */
     .pdf-btn-container {
       position: absolute;
       bottom: 20px;
       right: 30px;
     }
     .pdf-btn {
-      background-color: #e74c3c;
+      background-color: #3498db;
       color: white;
       border: none;
-      padding: 10px 20px;
+      padding: 8px 15px;
       border-radius: 5px;
       cursor: pointer;
-      font-size: 16px;
+      font-size: 14px;
       display: flex;
       align-items: center;
       transition: all 0.3s ease;
       box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      margin: 5px 0;
     }
     .pdf-btn i {
-      margin-right: 8px;
+      margin-right: 5px;
     }
     .pdf-btn:hover {
-      background-color: #c0392b;
+      background-color: #2c80b4;
       transform: translateY(-2px);
       box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     }
-    /* Conteneur pour le PDF */
-    #pdf-container {
-      padding: 20px;
+    .image-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .action-buttons {
+      display: flex;
+      gap: 5px;
+      margin-top: 5px;
     }
   </style>
 </head>
@@ -191,6 +194,7 @@ $corrections = $correctionModel->getAll();
       <a href="#">Événements</a>
       <a href="#">Dons</a>
       <a href="readtype.php?"#>exams</a>
+      <a href="chat_client.php?"#>chatbot</a>
     </nav>
   </header>
 
@@ -205,38 +209,45 @@ $corrections = $correctionModel->getAll();
     <h2 class="section-title">Liste des Corrections</h2>
 
     <div class="card-body" id="pdf-container">
-      <!-- Table to display the corrections -->
       <table class="table">
         <thead>
           <tr>
-            <th>#</th>
             <th>ID Examen</th>
             <th>Image</th>
             <th>Remarque</th>
             <th>Note</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
           <?php if ($corrections && $corrections->rowCount() > 0): ?>
-            <?php $index = 1; ?>
             <?php while($row = $corrections->fetch(PDO::FETCH_ASSOC)): ?>
               <tr>
-                <td><?= $index ?></td>
-                <td><?= htmlspecialchars($row['id_cor']) ?></td>
+                <td><?= htmlspecialchars($row['id_exam']) ?></td>
                 <td>
-                  <?php if (!empty($row['image2'])): ?>
-                    <a href="/ProjetWeb2A/View/Backoffice/material-dashboard-master/uploads/<?= htmlspecialchars($row['image2']) ?>" target="_blank">
-                    <img src="/ProjetWeb2A/View/Backoffice/material-dashboard-master/uploads/<?= htmlspecialchars($row['image2']) ?>" 
-                         alt="Correction" 
-                         class="correction-image">
-                  <?php else: ?>
-                    <span class="text-muted">Aucune image</span>
-                  <?php endif; ?>
+                  <div class="image-container">
+                    <?php if (!empty($row['image2'])): ?>
+                      <a href="/ProjetWeb2A/View/Backoffice/material-dashboard-master/uploads/<?= htmlspecialchars($row['image2']) ?>" target="_blank">
+                        <img src="/ProjetWeb2A/View/Backoffice/material-dashboard-master/uploads/<?= htmlspecialchars($row['image2']) ?>" 
+                             alt="Correction" 
+                             class="correction-image"
+                             data-image-src="/ProjetWeb2A/View/Backoffice/material-dashboard-master/uploads/<?= htmlspecialchars($row['image2']) ?>">
+                      </a>
+                    <?php else: ?>
+                      <span class="text-muted">Aucune image</span>
+                    <?php endif; ?>
+                  </div>
                 </td>
                 <td><?= htmlspecialchars($row['remarque']) ?></td>
                 <td><?= htmlspecialchars($row['note']) ?></td>
+                <td>
+                  <?php if (!empty($row['image2'])): ?>
+                    <button class="pdf-btn" onclick="generateSinglePDF('<?= htmlspecialchars($row['image2']) ?>', '<?= htmlspecialchars($row['id_exam']) ?>')">
+                      <i class="fas fa-file-pdf"></i> Télécharger PDF
+                    </button>
+                  <?php endif; ?>
+                </td>
               </tr>
-              <?php $index++; ?>
             <?php endwhile; ?>
           <?php else: ?>
             <tr>
@@ -246,42 +257,42 @@ $corrections = $correctionModel->getAll();
         </tbody>
       </table>
     </div>
-
-    <!-- Bouton pour générer le PDF - Nouvelle position -->
-    <div class="pdf-btn-container">
-      <button class="pdf-btn" onclick="generatePDF()">
-        <i class="fas fa-file-pdf"></i> Générer PDF
-      </button>
-    </div>
   </div>
 
   <footer>
     &copy; 2025 Gradup Shop. Tous droits réservés. | Contact : gradup@edu.tn | +216 99 999 999
   </footer>
 
-  <!-- JS -->
-  <script src="../assets/js/core/popper.min.js"></script>
-  <script src="../assets/js/core/bootstrap.min.js"></script>
-  <script src="../assets/js/plugins/perfect-scrollbar.min.js"></script>
-  <script src="../assets/js/plugins/smooth-scrollbar.min.js"></script>
-  
+  <!-- Scripts -->
   <script>
-    // Fonction pour générer le PDF
-    function generatePDF() {
-      // Element que nous voulons transformer en PDF
-      const element = document.getElementById('pdf-container');
+    async function generateSinglePDF(imagePath, examId) {
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF();
       
-      // Options du PDF
-      const opt = {
-        margin: 10,
-        filename: 'corrections_gradupshop_<?= date("Y-m-d") ?>.pdf',
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-      };
-      
-      // Générer le PDF
-      html2pdf().set(opt).from(element).save();
+      const fullImagePath = '/ProjetWeb2A/View/Backoffice/material-dashboard-master/uploads/' + imagePath;
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.src = fullImagePath;
+
+      await new Promise(resolve => {
+        img.onload = () => {
+          const pageWidth = pdf.internal.pageSize.getWidth();
+          const ratio = img.height / img.width;
+          const pageHeight = pageWidth * ratio;
+
+          pdf.addImage(img, 'JPEG', 0, 0, pageWidth, pageHeight);
+          
+          // Add exam ID as filename
+          const dateStr = new Date().toISOString().slice(0, 10);
+          pdf.save('correction_exam_' + examId + '_' + dateStr + '.pdf');
+          resolve();
+        };
+        
+        img.onerror = () => {
+          alert("Erreur lors du chargement de l'image.");
+          resolve();
+        };
+      });
     }
   </script>
 </body>

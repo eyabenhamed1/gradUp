@@ -244,6 +244,15 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
           <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
             <div class="mb-4">
+              <label for="id_exam" class="form-label">Identifiant de l'Examen (clé étrangère)</label>
+              <input type="text" name="id_exam" id="id_exam" class="form-control" 
+                     value="<?= htmlspecialchars($correction['id_exam'] ?? '') ?>" 
+                     required
+                     placeholder="EX123456">
+              <small class="text-muted">Entrez l'identifiant de l'examen associé</small>
+            </div>
+
+            <div class="mb-4">
               <label for="remarque" class="form-label">Commentaires de correction</label>
               <textarea name="remarque" id="remarque" class="form-control" required><?= htmlspecialchars($correction['remarque'] ?? '') ?></textarea>
               <small class="text-muted">Saisissez vos remarques détaillées sur cette correction</small>
