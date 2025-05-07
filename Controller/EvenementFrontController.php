@@ -1,25 +1,37 @@
 <?php
-// frontoffice/controller/EvenementFrontController.php
+require_once(__DIR__.'/../Model/EvenementModel.php');
+require_once(__DIR__.'/../Model/ParticipationModel.php'); // Ajout pour la gestion des participations
 
-require_once(__DIR__ . "/../../controller/evenementcontroller.php");
+class EvenementController {
+    private $evenementModel;
+    private $participationModel; // Nouvelle propriété
 
-class EvenementFrontController {
-    private $evenementController;
-    
     public function __construct() {
-        $this->evenementController = new evenementController();
+        $this->evenementModel = new EvenementModel();
+        $this->participationModel = new ParticipationModel(); // Initialisation
     }
-    
-    public function getAllEvenements() {
-        return $this->evenementController->getAllEvenements();
+
+    public function getPlacesDisponibles($eventId) {
+        $event = $this->evenementModel->getEvenementById($eventId);
+        
+        if (!$event || !$event['places_limitees']) {
+            return 999;
+        }
+
+        $participations = $this->participationModel->getNombreParticipations($eventId);
+        return max(0, $event['places_max'] - $participations);
     }
-    
+
+    public function listeEvenement() {
+        return $this->evenementModel->getAllEvenements();
+    }
+
     public function getEvenementById($id) {
-        return $this->evenementController->getevenementById($id);
+        return $this->evenementModel->getEvenementById($id);
     }
-    
-    public function getUpcomingEvenements($limit = 3) {
-        return $this->evenementController->getUpcomingEvenements($limit);
+
+    // Nouvelle méthode pour vérifier si un événement est complet
+    public function estComplet($eventId) {
+        return $this->getPlacesDisponibles($eventId) <= 0;
     }
 }
-?>

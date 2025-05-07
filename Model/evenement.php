@@ -1,41 +1,45 @@
 <?php
 class Evenement {
-    private $id;
-    private $titre;
-    private $description;
-    private $date_evenement;
-    private $lieu;
-    private $type_evenement;
-    private $image;
+    private $db;  // Déclaration explicite de la propriété
 
-    // Solution 1: Tous les paramètres optionnels
-    public function __construct(
-        $id = null, 
-        $titre = null, 
-        $description = null, 
-        $date_evenement = null, 
-        $lieu = null, 
-        $type_evenement = null, 
-        $image = null
-    ) {
-        $this->id = $id;
-        $this->titre = $titre;
-        $this->description = $description;
-        $this->date_evenement = $date_evenement;
-        $this->lieu = $lieu;
-        $this->type_evenement = $type_evenement;
-        $this->image = $image;
-    }
-
-    // Solution 2: Utiliser une méthode hydrate
-    public function hydrate(array $data) {
-        foreach ($data as $key => $value) {
-            $method = 'set'.ucfirst($key);
-            if (method_exists($this, $method)) {
-                $this->$method($value);
-            }
+    public function __construct() {
+        // Initialisation robuste de la connexion
+        try {
+            $this->db = new PDO(
+                "mysql:host=localhost;dbname=evenement", 
+                "root", 
+                "", 
+                [
+                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                    PDO::ATTR_EMULATE_PREPARES => false
+                ]
+            );
+        } catch (PDOException $e) {
+            throw new RuntimeException("Erreur de connexion DB: " . $e->getMessage());
         }
     }
+
+    public function getEvenementsRecents($limit) {
+        if (!$this->db) {
+            throw new RuntimeException("Connexion DB non initialisée");
+        }
+
+        try {
+            $sql = "SELECT * FROM evenement 
+                    WHERE date_evenement >= CURDATE()
+                    ORDER BY date_evenement ASC
+                    LIMIT ?";
+            
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([$limit]);
+            
+            return $stmt->fetchAll();
+        } catch (PDOException $e) {
+            throw new RuntimeException("Erreur de requête: " . $e->getMessage());
+        }
+    }
+
 
     // Getters
     public function getId() { return $this->id; }

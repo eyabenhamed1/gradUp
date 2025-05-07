@@ -1,144 +1,1069 @@
 <?php
-// Activation des erreurs pour le débogage
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+session_start();
 
 require_once(__DIR__ . "/../../controller/evenementcontroller.php");
+require_once(__DIR__ . "/../../controller/participationcontroller.php");
 
-// Vérification de l'ID
-if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
-    header("Location: evenements.php");
+// Validation de l'ID de l'événement
+if (!isset($_GET['id'])) {
+    if (!isset($_SERVER['HTTP_X_REQUESTED_WITH'])) {
+        header("HTTP/1.1 400 Bad Request");
+        header("Location: evenements.php");
+        exit();
+    }
+    // Pour les requêtes AJAX, on retourne une erreur en JSON
+    header('Content-Type: application/json');
+    echo json_encode(['error' => 'ID manquant']);
     exit();
 }
 
-$controller = new EvenementController();
-$event = $controller->getEvenementById($_GET['id']);
+$eventId = (int)$_GET['id'];
+$eventController = new EvenementController();
+$participationController = new ParticipationController();
 
-// Vérification si l'événement existe
-if (!$event) {
-    header("Location: evenements.php");
+// Récupération de l'événement
+try {
+    $event = $eventController->getEvenementById($eventId);
+    
+    if (!$event) {
+        if (!isset($_SERVER['HTTP_X_REQUESTED_WITH'])) {
+            header("HTTP/1.1 404 Not Found");
+            header("Location: evenements.php");
+            exit();
+        }
+        // Pour les requêtes AJAX
+        header('Content-Type: application/json');
+        echo json_encode(['error' => 'Événement non trouvé']);
+        exit();
+    }
+} catch (Exception $e) {
+    error_log("Erreur lors de la récupération de l'événement: " . $e->getMessage());
+    if (!isset($_SERVER['HTTP_X_REQUESTED_WITH'])) {
+        header("Location: evenements.php");
+        exit();
+    }
+    // Pour les requêtes AJAX
+    header('Content-Type: application/json');
+    echo json_encode(['error' => $e->getMessage()]);
     exit();
 }
+// Récupérer les informations de l'étudiant connecté
+$etudiantInfo = [];
+if (isset($_SESSION['id_etudiant'])) {
+    require_once($_SERVER['DOCUMENT_ROOT'] . '/projettt/projettt/ProjetWeb2A/Controller/EtudiantController.php');
+    $etudiantController = new EtudiantController();
+    $etudiantInfo = $etudiantController->getEtudiantById($_SESSION['id_etudiant']);
+}
+// Initialisation des variables
+$isRegistered = false;
+$message = '';
+$alertClass = '';
 
-// Chemin de base pour les images
-$imagePath = "../uploads/";
+/////////
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id_etudiant'])) {
+    try {
+        $studentId = (int)$_POST['id_etudiant'];
+        $email = $_POST['email'];
+        $statut = $_POST['statut'] ?? 'confirme';
+        $comments = $_POST['commentaire'] ?? '';
+        
+        $participationId = $participationController->inscrireParticipant(
+            $eventId,
+            $studentId,
+            $email,
+            $statut,
+            $comments
+        );
+
+        if ($participationId) {
+            $participationController->envoyerEmailConfirmation($email, $event);
+            $_SESSION['success_message'] = "Inscription réussie !";
+            header("Location: evenement-details.php?id=$eventId");
+            exit();
+        }
+    } catch (Exception $e) {
+        error_log("Erreur d'inscription: " . $e->getMessage());
+        $_SESSION['error_message'] = $e->getMessage();
+        header("Location: evenement-details.php?id=$eventId");
+        exit();
+    }
+
+}
+// Vérification si déjà inscrit (pour affichage)
+if (isset($_SESSION['registration_success'])) {
+    $isRegistered = true;
+    unset($_SESSION['registration_success']);
+} elseif (isset($_POST['id_etudiant'])) {
+    $isRegistered = $participationController->checkParticipation((int)$_POST['id_etudiant'], $eventId);
+}
+
+
+// Chemin des images
+define('BASE_UPLOADS_PATH', $_SERVER['DOCUMENT_ROOT'] . '/projettt/projettt/ProjetWeb2A/View/Backoffice/material-dashboard-master/uploads/');
+define('BASE_UPLOADS_URL', '/projettt/projettt/ProjetWeb2A/View/Backoffice/material-dashboard-master/uploads/');
+$defaultImage = "../assets/img/default-event.jpg";
+$eventDate = new DateTime($event['date_evenement']);
+$isPastEvent = $eventDate < new DateTime();
+
+// Vérifier si c'est une requête AJAX
+$isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && 
+          strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
+
+if ($isAjax) {
+    // Retourner juste le contenu de l'événement pour la modale
+    ob_start();
+    ?>
+    <div class="modal-event-header">
+        <h2 class="modal-event-title"><?= htmlspecialchars($event['titre']) ?></h2>
+        <div class="modal-event-meta">
+            <div class="modal-event-meta-item">
+                <i class="far fa-calendar-alt"></i>
+                <?= $eventDate->format('d/m/Y à H:i') ?>
+            </div>
+            <div class="modal-event-meta-item">
+                <i class="fas fa-map-marker-alt"></i>
+                <?= htmlspecialchars($event['lieu']) ?>
+            </div>
+            <div class="modal-event-meta-item">
+                <i class="fas fa-tag"></i>
+                <?= htmlspecialchars($event['type_evenement']) ?>
+            </div>
+        </div>
+    </div>
+    
+    <?php if (!empty($event['image']) && file_exists(BASE_UPLOADS_PATH . $event['image'])): ?>
+        <img src="<?= BASE_UPLOADS_URL . htmlspecialchars($event['image']) ?>" 
+             alt="<?= htmlspecialchars($event['titre']) ?>" 
+             class="modal-event-image">
+    <?php else: ?>
+        <img src="<?= $defaultImage ?>" alt="Image par défaut" class="modal-event-image">
+    <?php endif; ?>
+    
+    <div class="modal-event-body">
+        <p><?= nl2br(htmlspecialchars($event['description'])) ?></p>
+    </div>
+    
+    <div class="modal-event-actions">
+        <a href="evenement-details.php?id=<?= $eventId ?>" class="btn-inscription">
+            <i class="fas fa-info-circle"></i> Plus de détails
+        </a>
+        <?php if (!$isPastEvent && !$isRegistered && isset($_SESSION['id_etudiant'])): ?>
+            <button onclick="document.getElementById('openRegistrationModal').click()" class="btn-inscription">
+                <i class="fas fa-user-plus"></i> S'inscrire
+            </button>
+        <?php endif; ?>
+    </div>
+    <?php
+    $content = ob_get_clean();
+    echo $content;
+    exit();
+}
 ?>
+
 <!DOCTYPE html>
+<!-- Le reste de votre code HTML normal... -->
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= htmlspecialchars($event['titre']) ?> - Détails</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title><?= htmlspecialchars($event['titre']) ?> - Plateforme Éducative</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        .event-header {
-            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), 
-                        <?= !empty($event['image']) ? "url('$imagePath{$event['image']}')" : "var(--bs-dark)" ?>;
-            background-size: cover;
-            background-position: center;
-            color: white;
-            padding: 4rem 2rem;
-            border-radius: 0.5rem;
+        :root {
+            --primary: #2c3e50;
+            --primary-light: #34495e;
+            --primary-dark: #1a252f;
+            --secondary: #7f8c8d;
+            --accent: #e74c3c;
+            --light: #ecf0f1;
+            --light-gray: #bdc3c7;
+            --medium-gray: #95a5a6;
+            --dark: #2c3e50;
+            --dark-gray: #34495e;
+            --white: #ffffff;
+            --black: #000000;
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        
+        /* Header */
+        .header {
+            background-color: var(--white);
+            color: var(--dark);
+            padding: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--dark);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo i {
+            margin-right: 10px;
+            color: var(--accent);
+        }
+        
+        /* Navigation */
+        .nav {
+            display: flex;
+            align-items: center;
+        }
+        
+        .nav-list {
+            display: flex;
+            list-style: none;
+        }
+        
+        .nav-item {
+            margin-left: 1.5rem;
+            position: relative;
+        }
+        
+        .nav-link {
+            color: var(--dark);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 1rem;
+            padding: 0.5rem 0;
+            position: relative;
+            transition: var(--transition);
+        }
+        
+        .nav-link:hover {
+            color: var(--accent);
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: var(--accent);
+            transition: var(--transition);
+        }
+        
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        
+        .nav-icons {
+            display: flex;
+            align-items: center;
+            margin-left: 2rem;
+        }
+        
+        .nav-icon {
+            color: var(--dark);
+            font-size: 1.2rem;
+            margin-left: 1.2rem;
+            transition: var(--transition);
+            cursor: pointer;
+            position: relative;
+            text-decoration: none;
+        }
+        
+        .nav-icon:hover {
+            color: var(--accent);
+            transform: translateY(-2px);
+        }
+        
+        /* Main Content */
+        .main {
+            padding: 2rem 0;
+            min-height: calc(100vh - 120px);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .event-hero {
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .event-hero-image {
+            width: 100%;
+            height: 400px;
+            object-fit: cover;
+        }
+        
+        .event-hero-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            padding: 2rem;
+            color: var(--white);
+        }
+        
+        .event-hero-title {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .event-hero-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .event-hero-badge {
+            display: flex;
+            align-items: center;
+            background-color: rgba(255,255,255,0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+        
+        .event-hero-badge i {
+            margin-right: 0.5rem;
+        }
+        
+        .event-content {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 2rem;
+        }
+        
+        .event-details {
+            background-color: var(--white);
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .event-section-title {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--dark);
+            position: relative;
+            padding-bottom: 0.5rem;
+        }
+        
+        .event-section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 60px;
+            height: 3px;
+            background-color: var(--accent);
+            border-radius: 2px;
+        }
+        
+        .event-description {
+            line-height: 1.7;
+            color: var(--dark);
             margin-bottom: 2rem;
         }
-        .event-image {
-            max-height: 500px;
-            object-fit: cover;
-            border-radius: 0.5rem;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        
+        .event-info-list {
+            list-style: none;
         }
-        .event-meta {
-            background-color: #f8f9fa;
+        
+        .event-info-item {
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--light-gray);
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .event-info-item:last-child {
+            border-bottom: none;
+        }
+        
+        .event-info-label {
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        .event-info-value {
+            color: var(--secondary);
+        }
+        .form-control[readonly] {
+    background-color: #f8f9fa;
+    cursor: not-allowed;
+    border-color: #e9ecef;
+}
+        .event-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
+        .event-action-card {
+            background-color: var(--white);
+            border-radius: 8px;
             padding: 1.5rem;
-            border-radius: 0.5rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            text-align: center;
         }
-        .default-image {
-            height: 300px;
+        
+        .event-action-icon {
+            font-size: 2rem;
+            color: var(--accent);
+            margin-bottom: 1rem;
+        }
+        
+        .btn-event-action {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin-top: 15px;
+            background-color: var(--primary);
+            color: var(--white);
+            border: none;
+            border-radius: 6px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
             display: flex;
             align-items: center;
             justify-content: center;
-            background-color: #e9ecef;
-            border-radius: 0.5rem;
+            gap: 8px;
+            text-decoration: none;
+            text-align: center;
+        }
+        
+        .btn-event-action:hover {
+            background-color: var(--accent);
+        }
+        
+        .btn-event-action.registered {
+            background-color: var(--secondary);
+        }
+        
+        /* Footer */
+        .footer {
+            background-color: var(--dark);
+            color: var(--white);
+            padding: 3rem 0 1.5rem;
+        }
+        
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+        }
+        
+        .footer-col h3 {
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+            padding-bottom: 0.5rem;
+            color: var(--white);
+        }
+        
+        .footer-col h3::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 40px;
+            height: 2px;
+            background-color: var(--accent);
+        }
+        
+        .footer-links {
+            list-style: none;
+        }
+        
+        .footer-link {
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .footer-link a {
+            color: var(--light-gray);
+            text-decoration: none;
+            transition: var(--transition);
+            font-size: 0.9rem;
+        }
+        
+        .footer-link a:hover {
+            color: var(--accent);
+            padding-left: 5px;
+        }
+        
+        .social-links {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .social-link {
+            color: var(--white);
+            background-color: rgba(255, 255, 255, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+        
+        .social-link:hover {
+            background-color: var(--accent);
+            transform: translateY(-3px);
+        }
+        
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            margin-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.85rem;
+            color: var(--medium-gray);
+        }
+
+        /* Styles pour les modals */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .modal-content {
+            background-color: var(--white);
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+        
+        .close-modal {
+            color: var(--medium-gray);
+            position: absolute;
+            top: 15px;
+            right: 25px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .close-modal:hover {
+            color: var(--accent);
+        }
+        
+        .modal-title {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--dark);
+            text-align: center;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--dark);
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid var(--light-gray);
+            border-radius: 6px;
+            font-family: 'Poppins', sans-serif;
+            transition: var(--transition);
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.2);
+        }
+        
+        .form-text {
+            font-size: 0.8rem;
+            color: var(--medium-gray);
+            margin-top: 0.25rem;
+        }
+        
+        .btn-submit {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--accent);
+            color: var(--white);
+            border: none;
+            border-radius: 6px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .btn-submit:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        .registration-success {
+            text-align: center;
+            padding: 2rem 0;
+        }
+        
+        .registration-success-icon {
+            font-size: 3rem;
+            color: var(--accent);
+            margin-bottom: 1rem;
+        }
+        
+        /* Responsive */
+        @media (max-width: 992px) {
+            .event-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .event-hero-title {
+                font-size: 2rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .header-container {
+                flex-direction: column;
+                padding: 1rem;
+            }
+            
+            .nav {
+                width: 100%;
+                margin-top: 1rem;
+                justify-content: space-between;
+            }
+            
+            .nav-list {
+                display: none;
+            }
+            
+            .nav-icons {
+                margin-left: auto;
+            }
+            
+            .event-hero-image {
+                height: 300px;
+            }
+            
+            .event-hero-title {
+                font-size: 1.8rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .event-hero-image {
+                height: 250px;
+            }
+            
+            .event-hero-title {
+                font-size: 1.5rem;
+            }
+            
+            .event-hero-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container py-5">
-        <!-- En-tête avec image de fond -->
-        <div class="event-header text-center">
-            <h1 class="display-4"><?= htmlspecialchars($event['titre']) ?></h1>
-            <p class="lead">
-                <i class="fas fa-calendar-alt"></i> <?= date('d/m/Y', strtotime($event['date_evenement'])) ?>
-                | <i class="fas fa-map-marker-alt"></i> <?= htmlspecialchars($event['lieu']) ?>
-            </p>
-            <span class="badge bg-primary"><?= htmlspecialchars($event['type_evenement']) ?></span>
+    <header class="header">
+        <div class="header-container">
+            <a href="index.php" class="logo">
+                <i class="fas fa-graduation-cap"></i>
+                Plateforme Éducative
+            </a>
+            
+            <nav class="nav">
+                <ul class="nav-list">
+                    <li class="nav-item"><a href="index.php" class="nav-link">Accueil</a></li>
+                    <li class="nav-item"><a href="evenements.php" class="nav-link active">Événements</a></li>
+                    <li class="nav-item"><a href="mes-inscriptions.php" class="nav-link active">Mes Inscriptions</a></li>
+                    <li class="nav-item"><a href="cours.php" class="nav-link">Cours</a></li>
+                    <li class="nav-item"><a href="contact.php" class="nav-link">Contact</a></li>
+                </ul>
+            </nav>
+            <div class="nav-icons">
+    <a href="reminders.php" class="nav-icon" title="Mes rappels">
+        <i class="fas fa-bell"></i>
+        <?php 
+        $upcomingCount = count($participationController->getUpcomingEventsReminders($_SESSION['id_etudiant']));
+        if ($upcomingCount > 0): ?>
+            <span class="badge bg-danger" style="position: absolute; top: -5px; right: -5px; font-size: 10px;">
+                <?= $upcomingCount ?>
+            </span>
+        <?php endif; ?>
+    </a>
+</div> 
         </div>
+        
+    </header>
 
-        <div class="row mt-4">
-            <!-- Colonne principale -->
-            <div class="col-lg-8 mb-4">
-                <!-- Affichage de l'image principale -->
-                <?php if (!empty($event['image']) && file_exists($imagePath . $event['image'])): ?>
-                    <img src="<?= $imagePath . htmlspecialchars($event['image']) ?>" 
-                         class="img-fluid event-image mb-4" 
-                         alt="<?= htmlspecialchars($event['titre']) ?>">
+    <main class="main">
+        <div class="container">
+            <!-- Hero section de l'événement -->
+            <div class="event-hero">
+                <?php if (!empty($event['image']) && file_exists(BASE_UPLOADS_PATH . $event['image'])): ?>
+                    <img src="<?= BASE_UPLOADS_URL . htmlspecialchars($event['image']) ?>" 
+                         class="event-hero-image" 
+                         alt="<?= htmlspecialchars($event['titre']) ?>"
+                         loading="lazy">
                 <?php else: ?>
-                    <div class="default-image mb-4">
-                        <div class="text-center">
-                            <i class="fas fa-image fa-5x text-muted mb-3"></i>
-                            <h4 class="text-muted">Aucune image disponible</h4>
-                        </div>
-                    </div>
+                    <img src="<?= $defaultImage ?>" class="event-hero-image" alt="Image par défaut">
                 <?php endif; ?>
-
-                <!-- Description -->
-                <h2 class="mb-3"><i class="fas fa-align-left text-primary me-2"></i>Description</h2>
-                <div class="card border-0 shadow-sm mb-4">
-                    <div class="card-body">
-                        <p class="card-text"><?= nl2br(htmlspecialchars($event['description'])) ?></p>
+                
+                <div class="event-hero-overlay">
+                    <h1 class="event-hero-title"><?= htmlspecialchars($event['titre']) ?></h1>
+                    
+                    <div class="event-hero-meta">
+                        <div class="event-hero-badge">
+                            <i class="far fa-calendar-alt"></i>
+                            <?= $eventDate->format('d/m/Y à H:i') ?>
+                        </div>
+                        <div class="event-hero-badge">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <?= htmlspecialchars($event['lieu']) ?>
+                        </div>
+                        <div class="event-hero-badge">
+                            <i class="fas fa-tag"></i>
+                            <?= htmlspecialchars($event['type_evenement']) ?>
+                        </div>
                     </div>
                 </div>
             </div>
-
-            <!-- Sidebar avec informations -->
-            <div class="col-lg-4">
-                <div class="event-meta sticky-top" style="top: 20px;">
-                    <h3 class="mb-4"><i class="fas fa-info-circle text-primary me-2"></i>Informations</h3>
+            
+            <!-- Contenu principal -->
+             
+            <div class="event-content">
+                <!-- Détails de l'événement -->
+                <div class="event-details">
+                    <h2 class="event-section-title">
+                        <i class="fas fa-info-circle"></i> Description
+                    </h2>
                     
-                    <ul class="list-group list-group-flush mb-4">
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <span><i class="fas fa-calendar-day me-2"></i> Date</span>
-                            <span><?= date('d/m/Y', strtotime($event['date_evenement'])) ?></span>
+                    <div class="event-description">
+                        <?= nl2br(htmlspecialchars($event['description'])) ?>
+                    </div>
+                    
+                    <h2 class="event-section-title">
+                        <i class="fas fa-calendar-check"></i> Informations pratiques
+                    </h2>
+                    
+                    <ul class="event-info-list">
+                        <li class="event-info-item">
+                            <span class="event-info-label"><i class="far fa-calendar-alt me-2"></i>Date et heure</span>
+                            <span class="event-info-value"><?= $eventDate->format('d/m/Y à H:i') ?></span>
                         </li>
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <span><i class="fas fa-clock me-2"></i> Heure</span>
-                            <span><?= date('H:i', strtotime($event['date_evenement'])) ?></span>
+                        <li class="event-info-item">
+                            <span class="event-info-label"><i class="fas fa-map-marker-alt me-2"></i>Lieu</span>
+                            <span class="event-info-value"><?= htmlspecialchars($event['lieu']) ?></span>
                         </li>
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <span><i class="fas fa-map-marker-alt me-2"></i> Lieu</span>
-                            <span><?= htmlspecialchars($event['lieu']) ?></span>
+                        <li class="event-info-item">
+                            <span class="event-info-label"><i class="fas fa-tag me-2"></i>Type d'événement</span>
+                            <span class="event-info-value"><?= htmlspecialchars($event['type_evenement']) ?></span>
                         </li>
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <span><i class="fas fa-tag me-2"></i> Type</span>
-                            <span><?= htmlspecialchars($event['type_evenement']) ?></span>
+                        <li class="event-info-item">
+                            <span class="event-info-label"><i class="fas fa-user-tie me-2"></i>Organisateur</span>
+                            <span class="event-info-value"><?= htmlspecialchars($event['organisateur'] ?? 'Esprit') ?></span>
                         </li>
                     </ul>
-
-                    <div class="d-grid gap-2">
-                        <button class="btn btn-primary btn-lg">
-                            <i class="fas fa-ticket-alt me-2"></i>S'inscrire à l'événement
-                        </button>
-                        <a href="evenements.php" class="btn btn-outline-secondary">
-                            <i class="fas fa-arrow-left me-2"></i>Retour à la liste
-                        </a>
+                </div>
+                
+                <!-- Sidebar avec actions -->
+                <div class="event-sidebar">
+                    <div class="event-action-card">
+                        <div class="event-action-icon">
+                            <i class="fas fa-calendar-plus"></i>
+                        </div>
+                        <?php 
+                        $currentStatus = $participationController->getParticipationStatus($_SESSION['id_etudiant'], $eventId);?>
+                        <?php if ($isPastEvent): ?>
+                            <p>Cet événement est terminé</p>
+                            <a href="evenements.php" class="btn-event-action">
+                                <i class="fas fa-arrow-left"></i> Voir les événements à venir
+                            </a>
+                        <?php elseif ($currentStatus === 'confirme'): ?>
+                            <p>Vous êtes déjà inscrit à cet événement</p>
+                            <a href="mes-inscriptions.php" class="btn-event-action registered">
+                                <i class="fas fa-list"></i> Voir mes inscriptions
+                            </a>
+                            <!-- Formulaire corrigé -->
+                            <form method="POST" 
+                                  action="/projettt/projettt/ProjetWeb2A/View/Frontoffice/annuler_inscription.php" 
+                                  class="d-grid">
+                                <input type="hidden" name="event_id" value="<?= $eventId ?>">
+                                <button type="submit" class="btn-event-action btn-danger">
+                                    <i class="fas fa-times"></i> Annuler l'inscription
+                                </button>
+                            </form>
+                        <?php elseif ($currentStatus === 'annulé'): ?>
+                            <p>Vous avez annulé votre inscription. Vous pouvez vous réinscrire.</p>
+                            <button id="openRegistrationModal" class="btn-event-action">
+                                <i class="fas fa-user-plus"></i> S'inscrire
+                            </button>
+                        <?php else: ?>
+                            <p>Participez à cet événement</p>
+                            <button id="openRegistrationModal" class="btn-event-action">
+                                <i class="fas fa-user-plus"></i> S'inscrire
+                            </button>
+                        <?php endif; ?>
                     </div>
+                    
+                    <div class="event-action-card">
+                        <div class="event-action-icon">
+                            <i class="fas fa-share-alt"></i>
+                        </div>
+                        <div style="margin-top: 2rem;">
+                            <a href="evenements.php" class="btn-event-action" style="margin-bottom: 1rem;">
+                                <i class="fas fa-arrow-left"></i> Retour aux événements
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal d'inscription -->
+    <div id="registrationModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            
+            <div id="registrationFormContainer">
+                <h2 class="modal-title">
+                    <i class="fas fa-user-plus"></i> Inscription
+                </h2>
+                
+                <form id="registrationForm" method="POST" action="evenement-details.php?id=<?= $eventId ?>">
+                    <input type="hidden" name="event_id" value="<?= $eventId ?>">
+                    <input type="hidden" name="id_etudiant" value="<?= $_SESSION['id_etudiant'] ?? '' ?>">
+                    
+                    <div class="form-group">
+                        <label class="form-label">Nom</label>
+                        <input type="text" class="form-control" value="<?= htmlspecialchars($etudiantInfo['nom'] ?? '') ?>" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Prénom</label>
+                        <input type="text" class="form-control" value="<?= htmlspecialchars($etudiantInfo['prenom'] ?? '') ?>" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email" class="form-label">Email de confirmation *</label>
+                        <input type="email" class="form-control" id="email" name="email" required
+                               value="<?= htmlspecialchars($etudiantInfo['email'] ?? '') ?>">
+                        <small class="form-text">L'email où vous souhaitez recevoir la confirmation</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="statut" class="form-label">Statut de participation *</label>
+                        <select class="form-control" id="statut" name="statut" required>
+                            <option value="confirmé" selected>Confirmé</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="comments" class="form-label">Motivations</label>
+                        <textarea class="form-control" id="comments" name="comments" rows="3"></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn-submit">
+                        <i class="fas fa-paper-plane"></i> Envoyer l'inscription
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de confirmation -->
+    <div id="confirmationModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            
+            <div class="registration-success">
+                <div class="registration-success-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h2 class="modal-title">Inscription confirmée !</h2>
+                <p>Vous êtes maintenant inscrit à cet événement.</p>
+                <p>Un email de confirmation vous a été envoyé.</p>
+                
+                <div style="margin-top: 2rem;">
+                    <a href="evenements.php" class="btn-event-action" style="margin-bottom: 1rem;">
+                        <i class="fas fa-arrow-left"></i> Retour aux événements
+                    </a>
+                    <a href="C:\xampp\htdocs\projettt\projettt\ProjetWeb2A\View\Frontoffice\mes-inscriptions.php" class="btn-event-action registered">                        <i class="fas fa-list"></i> Voir mes inscriptions
+                    </a>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-col">
+                <h3>Plateforme Éducative</h3>
+                <p>Votre plateforme d'apprentissage et de partage de connaissances.</p>
+                <div class="social-links">
+                    <a href="#" class="social-link"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="social-link"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+            </div>
+            
+            <div class="footer-col">
+                <h3>Liens rapides</h3>
+                <ul class="footer-links">
+                    <li class="footer-link"><a href="index.php">Accueil</a></li>
+                    <li class="footer-link"><a href="evenements.php">Événements</a></li>
+                    <li class="footer-link"><a href="cours.php">Cours</a></li>
+                    <li class="footer-link"><a href="contact.php">Contact</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-col">
+                <h3>Informations</h3>
+                <ul class="footer-links">
+                    <li class="footer-link"><a href="a-propos.php">À propos</a></li>
+                    <li class="footer-link"><a href="mentions-legales.php">Mentions légales</a></li>
+                    <li class="footer-link"><a href="confidentialite.php">Confidentialité</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-col">
+                <h3>Contact</h3>
+                <ul class="footer-links">
+                    <li class="footer-link"><i class="fas fa-map-marker-alt"></i> 123 Rue de l'Éducation, Paris</li>
+                    <li class="footer-link"><i class="fas fa-phone"></i> +33 1 23 45 67 89</li>
+                    <li class="footer-link"><i class="fas fa-envelope"></i> contact@plateforme-educative.fr</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <p>&copy; <?= date('Y') ?> Plateforme Éducative. Tous droits réservés.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Gestion des modales
+        document.addEventListener('DOMContentLoaded', function() {
+            const registrationModal = document.getElementById('registrationModal');
+            const confirmationModal = document.getElementById('confirmationModal');
+            const openModalBtn = document.getElementById('openRegistrationModal');
+            const closeModalBtns = document.querySelectorAll('.close-modal');
+            
+            // Ouvrir la modale d'inscription
+            if (openModalBtn) {
+                openModalBtn.addEventListener('click', function() {
+                    registrationModal.style.display = 'block';
+                });
+            }
+            
+            // Fermer les modales
+            closeModalBtns.forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    registrationModal.style.display = 'none';
+                    confirmationModal.style.display = 'none';
+                });
+            });
+        
+            
+            // Fermer en cliquant en dehors
+            window.addEventListener('click', function(event) {
+                if (event.target === registrationModal) {
+                    registrationModal.style.display = 'none';
+                }
+                if (event.target === confirmationModal) {
+                    confirmationModal.style.display = 'none';
+                }
+            });
+            
+            document.getElementById('registrationForm').addEventListener('submit', function(e) {
+                // Validation simple
+                const studentId = document.getElementById('id_etudiant').value;
+                if (!studentId || studentId.length < 5 || studentId.length > 8) {
+                    e.preventDefault();
+                    alert('Le numéro étudiant doit contenir entre 5 et 8 chiffres');
+                    return false;
+                }
+                return true;
+            });
+            
+            // Vérifier si on doit afficher la modale de confirmation
+            <?php if (isset($_GET['inscription']) && $_GET['inscription'] === 'success'): ?>
+                confirmationModal.style.display = 'block';
+            <?php endif; ?>
+        });
+    </script>
 </body>
 </html>
