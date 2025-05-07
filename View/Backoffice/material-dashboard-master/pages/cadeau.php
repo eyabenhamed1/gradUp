@@ -52,19 +52,7 @@ $cadeaux = $controller->listeCadeaux(); // Utilisation de la méthode du contrô
     <div class="collapse navbar-collapse w-auto" id="sidenav-collapse-main">
       <ul class="navbar-nav">
         <li class="nav-item">
-          <a class="nav-link text-dark" href="../pages/dashboard.html">
-            <i class="material-symbols-rounded opacity-5">dashboard</i>
-            <span class="nav-link-text ms-1">Dashboard</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link text-dark" href="../pages/tables.html">
-            <i class="material-symbols-rounded opacity-5">table_view</i>
-            <span class="nav-link-text ms-1">Utilisateurs</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link active bg-gradient-dark text-white" href="../pages/certificat.php">
+          <a class="nav-link text-dark" href="../pages/certificat.php">
             <i class="material-symbols-rounded opacity-5">gift</i>
             <span class="nav-link-text ms-1">Certficats</span>
           </a>

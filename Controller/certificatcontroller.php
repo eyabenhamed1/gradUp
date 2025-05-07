@@ -104,13 +104,21 @@ public function index() {
     public function deleteCertificat($id) {
         $db = config::getConnexion();
         try {
-            $query = $db->prepare("DELETE FROM certificat WHERE id = :id");
-            $query->bindParam(':id', $id);
-            $query->execute();
+            // Supprimer d'abord le cadeau associé
+            $query1 = $db->prepare("DELETE FROM cadeau WHERE id = :id");
+            $query1->bindParam(':id', $id);
+            $query1->execute();
+    
+            // Ensuite supprimer le certificat
+            $query2 = $db->prepare("DELETE FROM certificat WHERE id = :id");
+            $query2->bindParam(':id', $id);
+            $query2->execute();
+    
         } catch (PDOException $e) {
             echo "Erreur : " . $e->getMessage();
         }
     }
+    
 
     // Lire un certificat par ID
     public function getCertificatById($id) {
