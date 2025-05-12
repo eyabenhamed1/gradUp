@@ -53,7 +53,10 @@ $cadeaux = $controller->listeCadeaux();
       font-weight: bold;
       text-shadow: 2px 2px 4px #000;
     }
-    
+
+
+
+
     .section-title {
       text-align: center;
       margin: 2rem 0 1rem;
