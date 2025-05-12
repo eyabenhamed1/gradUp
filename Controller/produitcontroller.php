@@ -5,17 +5,17 @@ require_once(__DIR__ . "/../model/Produit.php");
 class ProduiController {
 
     // Créer un produit
-    public function createProduit($name, $description, $prix, $stock, $image) {
+    public function createProduit($name, $description, $prix, $stock, $image, $categorie) {
         $db = config::getConnexion();
         try {
-            // Ajout du placeholder :image dans la clause VALUES pour insérer l'image dans la BDD
-            $query = $db->prepare("INSERT INTO produit (name, description, prix, stock, image) 
-                                   VALUES (:name, :description, :prix, :stock, :image)");
+            $query = $db->prepare("INSERT INTO produit (name, description, prix, stock, image, categorie) 
+                                   VALUES (:name, :description, :prix, :stock, :image, :categorie)");
             $query->bindParam(':name', $name);
             $query->bindParam(':description', $description);
             $query->bindParam(':prix', $prix);
             $query->bindParam(':stock', $stock);
             $query->bindParam(':image', $image);
+            $query->bindParam(':categorie', $categorie);
             
             $query->execute();
         } catch (PDOException $e) {
@@ -38,19 +38,21 @@ class ProduiController {
     }
 
     // Mettre à jour un produit
-    public function updateProduit($id_produit, $name, $description, $prix, $stock, $image) {
+    public function updateProduit($id, $name, $description, $prix, $stock, $image, $categorie) {
         $db = config::getConnexion();
         try {
-            // Dans la mise à jour, on met aussi à jour la colonne image
             $query = $db->prepare("UPDATE produit 
-                                   SET name = :name, description = :description, prix = :prix, stock = :stock, image = :image
-                                   WHERE id_produit = :id_produit");
-            $query->bindParam(':id_produit', $id_produit);
+                                   SET name = :name, description = :description, 
+                                       prix = :prix, stock = :stock, 
+                                       image = :image, categorie = :categorie
+                                   WHERE id_produit = :id");
+            $query->bindParam(':id', $id);
             $query->bindParam(':name', $name);
             $query->bindParam(':description', $description);
             $query->bindParam(':prix', $prix);
             $query->bindParam(':stock', $stock);
             $query->bindParam(':image', $image);
+            $query->bindParam(':categorie', $categorie);
             
             $query->execute();
         } catch (PDOException $e) {
