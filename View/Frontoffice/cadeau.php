@@ -53,6 +53,7 @@ $cadeaux = $controller->listeCadeaux();
       font-weight: bold;
       text-shadow: 2px 2px 4px #000;
     }
+    
     .section-title {
       text-align: center;
       margin: 2rem 0 1rem;
@@ -156,7 +157,8 @@ $cadeaux = $controller->listeCadeaux();
   <nav>
     <a href="#">Accueil</a>
     <a href="#">Nos Cadeaux</a>
-    <a href="#">Mes Certificats</a>
+  
+    <a href="index.php?">Mes Certificats</a>
   </nav>
 </header>
 

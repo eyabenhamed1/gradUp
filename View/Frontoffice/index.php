@@ -181,7 +181,8 @@ $certificats = $controller->listeCertificat();
     <nav>
       <a href="#">Accueil</a>
       <a href="#">Mes Certificats</a>
-      <a href="#">Demander un Certificat</a>
+      <a href="#">Demander un Certificat</a>*
+      <a href="cadeau.php?">Demander un Cadeau</a>
     </nav>
   </header>
 
