@@ -18,6 +18,9 @@ class AuthController {
         return false;
     }
 
+
+    
+
     public function logout() {
         unset($_SESSION['etudiant']);
         session_destroy();
