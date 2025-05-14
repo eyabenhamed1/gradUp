@@ -1,0 +1,53 @@
+// Dans Controller/CommandeFront.php
+
+<?php
+require_once(__DIR__ . "/../config.php");
+require_once(__DIR__ . "/../model/Commande.php");
+
+class CommandeFront
+{
+    private $pdo;
+    private $commandeModel;
+
+    public function __construct() {
+        $this->pdo = config::getConnexion();
+        $this->commandeModel = new Commande();
+    }
+
+    public function getCommandesForUser($userId) {
+        return $this->commandeModel->getCommandesByUserId($userId);
+    }
+
+    public function getCommandeDetailsForUser($commandeId, $userId) {
+        return $this->commandeModel->getCommandeByIdForUser($commandeId, $userId);
+    }
+
+    public function validateOrder($orderData, $userId) {
+        // Ajoute l'ID utilisateur aux données de commande
+        $orderData['id_user'] = $userId;
+        
+        // Enregistre la commande
+        $commandeId = $this->commandeModel->save($orderData);
+        
+        // Met à jour les stocks
+        $this->updateProductStocks($orderData['produits']);
+        
+        return $commandeId;
+    }
+
+    private function updateProductStocks($produitsJson) {
+        $produits = json_decode($produitsJson, true);
+        
+        foreach ($produits as $produit) {
+            $this->updateStock($produit['id_produit'], $produit['quantity']);
+        }
+    }
+
+    private function updateStock($productId, $quantity) {
+        $stmt = $this->pdo->prepare("UPDATE produit SET quantite = quantite - :quantity WHERE id_produit = :id");
+        $stmt->execute([
+            ':quantity' => $quantity,
+            ':id' => $productId
+        ]);
+    }
+}

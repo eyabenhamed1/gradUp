@@ -1,0 +1,241 @@
+// Fonctions communes
+document.addEventListener('DOMContentLoaded', function() {
+    // Vérifier si l'utilisateur est connecté
+    checkAuthStatus();
+    
+    // Gestion du formulaire de connexion
+    const loginForm = document.getElementById('loginForm');
+    if (loginForm) {
+        loginForm.addEventListener('submit', handleLogin);
+    }
+    
+    // Gestion du formulaire d'inscription
+    const registerForm = document.getElementById('registerForm');
+    if (registerForm) {
+        registerForm.addEventListener('submit', handleRegister);
+    }
+    
+    // Gestion du formulaire de modification de profil
+    const editProfileForm = document.getElementById('editProfileForm');
+    if (editProfileForm) {
+        editProfileForm.addEventListener('submit', handleEditProfile);
+    }
+    
+    // Gestion du bouton de déconnexion
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', handleLogout);
+    }
+    
+    // Charger les données du profil si on est sur la page de profil
+    if (window.location.pathname.includes('profile.html')) {
+        loadProfileData();
+    }
+});
+
+// Vérifier le statut d'authentification
+function checkAuthStatus() {
+    const token = localStorage.getItem('authToken');
+    const userData = localStorage.getItem('userData');
+    
+    if (token && userData) {
+        // L'utilisateur est connecté
+        const loginLinks = document.querySelectorAll('a[href="login.html"]');
+        const registerLinks = document.querySelectorAll('a[href="register.html"]');
+        
+        loginLinks.forEach(link => {
+            link.textContent = 'Mon Compte';
+            link.href = 'profile.html';
+        });
+        
+        registerLinks.forEach(link => {
+            link.style.display = 'none';
+        });
+    } else {
+        // L'utilisateur n'est pas connecté
+        const logoutLinks = document.querySelectorAll('#logoutBtn');
+        const profileLinks = document.querySelectorAll('a[href="profile.html"]');
+        
+        logoutLinks.forEach(link => {
+            link.style.display = 'none';
+        });
+        
+        profileLinks.forEach(link => {
+            link.style.display = 'none';
+        });
+    }
+}
+
+// Gérer la connexion
+async function handleLogin(e) {
+    e.preventDefault();
+    
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    
+    try {
+        // Envoyer les données au serveur
+        const response = await fetch('http://localhost:3000/api/users/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email, password })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            // Stocker le token et les données utilisateur
+            localStorage.setItem('authToken', data.token);
+            localStorage.setItem('userData', JSON.stringify(data.user));
+            
+            // Rediriger vers le profil
+            window.location.href = 'profile.html';
+        } else {
+            alert(data.message || 'Erreur de connexion');
+        }
+    } catch (error) {
+        console.error('Erreur:', error);
+        alert('Une erreur est survenue lors de la connexion');
+    }
+}
+
+// Gérer l'inscription
+async function handleRegister(e) {
+    e.preventDefault();
+    
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    const role = document.getElementById('role').value;
+    const category = document.getElementById('category').value;
+    
+    if (password !== confirmPassword) {
+        alert('Les mots de passe ne correspondent pas');
+        return;
+    }
+    
+    try {
+        const response = await fetch('http://localhost:3000/api/users/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email, password, role, category })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            alert('Inscription réussie ! Vous pouvez maintenant vous connecter.');
+            window.location.href = 'login.html';
+        } else {
+            alert(data.message || 'Erreur lors de l\'inscription');
+        }
+    } catch (error) {
+        console.error('Erreur:', error);
+        alert('Une erreur est survenue lors de l\'inscription');
+    }
+}
+
+// Gérer la déconnexion
+function handleLogout(e) {
+    e.preventDefault();
+    
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('userData');
+    window.location.href = 'index.html';
+}
+
+// Charger les données du profil
+async function loadProfileData() {
+    const token = localStorage.getItem('authToken');
+    const userData = JSON.parse(localStorage.getItem('userData'));
+    
+    if (!token || !userData) {
+        window.location.href = 'login.html';
+        return;
+    }
+    
+    // Afficher les informations de base
+    document.getElementById('userName').textContent = userData.email.split('@')[0];
+    document.getElementById('userRole').textContent = `${userData.role === 'student' ? 'Étudiant' : 'Enseignant'} en ${userData.category}`;
+    document.getElementById('userEmail').textContent = userData.email;
+    
+    try {
+        // Récupérer les statistiques de l'utilisateur
+        const response = await fetch(`http://localhost:3000/api/users/${userData.id}/stats`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        const stats = await response.json();
+        
+        if (response.ok) {
+            document.getElementById('eventsCount').textContent = stats.events || '0';
+            document.getElementById('rewardsCount').textContent = stats.rewards || '0';
+            document.getElementById('clubsCount').textContent = stats.clubs || '0';
+        }
+    } catch (error) {
+        console.error('Erreur lors du chargement des statistiques:', error);
+    }
+}
+
+// Gérer la modification du profil
+async function handleEditProfile(e) {
+    e.preventDefault();
+    
+    const token = localStorage.getItem('authToken');
+    const userData = JSON.parse(localStorage.getItem('userData'));
+    
+    if (!token || !userData) {
+        window.location.href = 'login.html';
+        return;
+    }
+    
+    const currentPassword = document.getElementById('currentPassword').value;
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+    const category = document.getElementById('category').value;
+    
+    if (newPassword && newPassword !== confirmNewPassword) {
+        alert('Les nouveaux mots de passe ne correspondent pas');
+        return;
+    }
+    
+    try {
+        const updateData = { category };
+        
+        if (newPassword) {
+            updateData.currentPassword = currentPassword;
+            updateData.newPassword = newPassword;
+        }
+        
+        const response = await fetch(`http://localhost:3000/api/users/${userData.id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(updateData)
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            // Mettre à jour les données locales
+            userData.category = data.category;
+            localStorage.setItem('userData', JSON.stringify(userData));
+            
+            alert('Profil mis à jour avec succès !');
+            window.location.href = 'profile.html';
+        } else {
+            alert(data.message || 'Erreur lors de la mise à jour du profil');
+        }
+    } catch (error) {
+        console.error('Erreur:', error);
+        alert('Une erreur est survenue lors de la mise à jour du profil');
+    }
+}

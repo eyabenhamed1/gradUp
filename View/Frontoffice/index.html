@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Plateforme Étudiante</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(120deg, #4a00e0, #7f00ff);
+      color: #fff;
+    }
+    header {
+      position: sticky; top: 0;
+      background: rgba(255,255,255,0.95);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 15px 50px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      z-index: 100;
+    }
+    header img.logo {
+      height: 120px;
+      width: auto;
+    }
+    nav a {
+      text-decoration: none;
+      color: #333;
+      margin: 0 15px;
+      font-weight: 600;
+      transition: color 0.3s;
+    }
+    nav a:hover { color: #7f00ff; }
+    .hero {
+      position: relative;
+      text-align: center;
+      color: white;
+      background: url("assets/img/hero-bg.jpg") no-repeat center center/cover;
+      padding: 140px 20px 100px;
+    }
+    .hero::after {
+      content: "";
+      position: absolute; top: 0; left: 0;
+      width: 100%; height: 100%; background: rgba(0,0,0,0.4);
+    }
+    .hero-content { position: relative; z-index: 1; }
+    .hero h1 {
+      font-size: 3.4em; font-weight: 600; margin-bottom: 20px;
+    }
+    .hero p {
+      font-size: 1.3em; max-width: 650px; margin: 0 auto 30px;
+    }
+    .btn {
+      padding: 12px 30px; margin: 10px;
+      font-size: 16px; color: #fff;
+      background: linear-gradient(90deg, #4a00e0, #7f00ff);
+      border: none; border-radius: 30px;
+      text-decoration: none; cursor: pointer;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    }
+    .sections {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 30px; padding: 40px;
+      background: #fff; color: #333;
+    }
+    .section-box {
+      background: #fff; border-radius: 16px; padding: 20px;
+      text-align: center; box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .section-box:hover {
+      transform: translateY(-5px) scale(1.03);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+    .section-box img { width: 80px; margin-bottom: 15px; }
+    .section-box h3 { margin-bottom: 10px; font-weight: 600; }
+    footer {
+      background-color: #333; color: white;
+      text-align: center; padding: 20px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="assets/img/logo.png" alt="Logo Plateforme Étudiante" class="logo">
+    <nav>
+      <a href="#">Accueil</a>
+      <a href="#">Shopping</a>
+      <a href="#">Événements</a>
+      <a href="#">E-learning</a>
+      <a href="#">Certifications</a>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <div class="hero-content">
+      <h1>Bienvenue sur votre espace étudiant</h1>
+      <p>Un endroit où vous pouvez apprendre, évoluer, collaborer et être récompensé pour vos efforts.</p>
+      <a href="auth/register.php" class="btn">S'inscrire</a>
+      <a href="auth/login.php" class="btn">Se connecter</a>
+    </div>
+  </section>
+
+  <section class="sections">
+    <div class="section-box">
+      <img src="assets/img/shopping.png" alt="Shopping">
+      <h3>Shopping Étudiant</h3>
+      <p>Des offres exclusives sur des articles tendance.</p>
+    </div>
+    <div class="section-box">
+      <img src="assets/img/evenement.png" alt="Événements">
+      <h3>Événements</h3>
+      <p>Participez à des hackathons, concours et soirées étudiantes.</p>
+    </div>
+    <div class="section-box">
+      <img src="assets/img/elearning.png" alt="E-learning">
+      <h3>E-learning</h3>
+      <p>Cours, tutoriels et ateliers en ligne pour booster vos compétences.</p>
+    </div>
+    <div class="section-box">
+      <img src="assets/img/certification.png" alt="Certifications">
+      <h3>Certifications</h3>
+      <p>Obtenez des certificats pour valoriser votre CV.</p>
+    </div>
+  </section>
+
+  <footer>
+    © 2025 Plateforme Étudiante - Tous droits réservés.
+  </footer>
+</body>
+</html>
